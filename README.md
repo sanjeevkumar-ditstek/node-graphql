@@ -1,4 +1,4 @@
-# architecture
+# Architecture
 For Eslint and husky
 ## Getting started
 
