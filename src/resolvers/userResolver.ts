@@ -2,7 +2,6 @@ import proxy from "../service/appServiceProxy";
 import { ApolloError } from "apollo-server-express";
 import STATUS_CODES from "../utils/enum/statusCodes"
 import * as IUserService from "../service/user/IUserService"
-
 import authenticate from "../utils/auth/userAuth"
 
 type User = {
