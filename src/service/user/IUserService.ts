@@ -1,94 +1,89 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import IUser from "./IUser";
-import { IRequest, IResponse } from "../../utils/enum/common";
-import { Role } from "../../utils/enum/role";
+import { User as IUSER, UpdateUser as IUPDATEUSER } from "../../utils/interface/IUser";
+import { IResponse } from "../../utils/interface/common";
+import { Request } from "express";
+
 export interface IUserServiceAPI {
-    register(request: IRegisterUserRequest): Promise<IRegisterUserResponse>;
-    login(request: ILoginUserRequest): Promise<ILoginUserResponse>;
-    get(request: IGetUserRequest): Promise<IGetUserResponse>;
+	create(payload: IRegisterUserPayload): any;
+	getUsers(): any;
+	getUser(payload: IGetUserPayload): any;
+	deleteUser(request: IDeleteUserPayload): any;
+	updateUser(payload: IUpdateUserPayload): any;
+	loginUser(payload: ILoginPayload): any;
 }
 
-/********************************************************************************
- *  Authentication
- ********************************************************************************/
-
-export interface IAuthenticateUserResponse extends IResponse {
-    user?: IUser;
-    token?: string;
+export interface IRegisterUserPayload {
+	firstname: string;
+	lastname: string;
+	email: string;
+	password: string;
+	age: number;
+	role: string;
 }
 
-export interface IRegisterUserRequest extends IRequest {
-    _id?: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    role: Role;
+export interface IUpdateUserPayload {
+	id: string,
+	data: {
+		firstname?: string;
+		lastname?: string;
+		email?: string;
+		password?: string;
+		age?: number;
+		role?: string;
+	}
 }
+
 export interface IRegisterUserResponse extends IResponse {
-    status?:any;
-    error?: any;
-    user?: IUser;
+	user?: IUSER;
 }
 
-/********************************************************************************
- *  Login
- ********************************************************************************/
-
-export interface ILoginUserRequest extends IRequest {
-    email: string;
-    password: string;
+export interface IUpdateUserResponse extends IResponse {
+	user?: IUPDATEUSER;
 }
 
-export interface ILoginUserResponse extends IResponse {
-    user?: IUser;
-    error?: any;
-    token?: string;
-    message?: string;
+export interface IGetUserRequest extends Request {
+	params: {
+		id: string;
+	}
 }
-
-/********************************************************************************
- *  Verify email
- ********************************************************************************/
-
-export interface IVerifyUserEmailRequest extends IRequest {
-    email: string;
-}
-export interface IVerifyUserEmailResponse extends IResponse {
-    user?: IUser;
-    error?: any;
-}
-
-/********************************************************************************
- *  Get User
- ********************************************************************************/
-
-export interface IGetUserRequest extends IRequest {
-    returnUser?: IUser;
-    user?: IUser;
-    id?: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    password?: string;
-    role?: Role;
-}
-
 export interface IGetUserResponse extends IResponse {
-	// newimg?: any;
-    user?: IUser;
-    error?: any;
+	user?: IUSER;
 }
 
-/********************************************************************************
- *  Get Users
- ********************************************************************************/
+export interface IGetAllUserRequest extends Request {
 
-export interface IGetUsersRequest extends IRequest {
-    user?:IUser;
 }
-export interface IGetUsersResponse extends IResponse {
-    user?: IUser;
-    error?: any;
+export interface IGetAllUserResponse extends IResponse {
+	users?: IUSER[];
+}
+export interface IGetUserPayload {
+	id: string;
+}
+export interface IGetUserResponse extends IResponse {
+	users?: IUSER;
+}
+
+export interface IDeleteUserPayload extends Request {
+	id: string
+}
+export interface IDeleteUserResponse extends IResponse {
+	user?: IUSER;
+}
+
+export interface ILoginPayload {
+	email: string,
+	password: string
+}
+
+export interface ILoginResponse extends IResponse {
+	token?: string;
+	user?: IUSER;
+}
+
+export interface ILogsPayload {
+	oldData: [IUSER],
+	newData: [IUSER],
+}
+
+export interface ILogsResponse extends IResponse {
+	usersLogs?: [IUSER];
 }
