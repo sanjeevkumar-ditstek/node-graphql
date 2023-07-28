@@ -1,7 +1,7 @@
 import { gql } from "apollo-server-express"; //will create a schema
 const UserTypeDefs = gql`
   type User {
-    _id: String,
+    _id: String!,
     firstname: String,
     lastname: String,
     email: String,

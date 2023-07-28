@@ -23,15 +23,22 @@ type UpdateUserPayload = {
 const userResolvers = {
   Query: {
     getAllUsers: async (_: any, contextValue: any) => {
+      try{
       // let user: any = authenticate(contextValue.token)
       const response: IUserService.IGetAllUserResponse = await proxy.user.getUsers()
         return response.data;
-      
+      }catch(e){
+        return new ApolloError(JSON.stringify(e) ,'500')
+      }
     },
     getUser: async (_: any, args: IUserService.IGetUserArgsPayload, contextValue: any) => {
+      try{
       // let user: any = authenticate(contextValue.token)
       const response: IUserService.IGetUserResponse = await proxy.user.getUser(args.data)
       return response.data;
+      }catch(e){
+        return new ApolloError(JSON.stringify(e) ,'500')
+      }
     }
   },
   Mutation: {
@@ -46,14 +53,14 @@ const userResolvers = {
           //   response.error?.message,
           //   response.status.toString()
         }
-        return response;
+        return response.data;
       } catch (e) {
         console.log(e)
-        // throw e;
+        return new ApolloError(JSON.stringify(e) ,'500')
       }
-     
     },
     updateUser: async (_: any, args: IUserService.IUpdateUserPayload, contextValue: any) => {
+      try{
       // let user: any = authenticate(contextValue.token)
       const payload: UpdateUserPayload = args.data;
       const response: IUserService.IUpdateUserResponse = await proxy.user.updateUser({ id: args.id, data: payload });
@@ -64,17 +71,28 @@ const userResolvers = {
           );
         }
       return response.data;
+      }catch(e){
+        return new ApolloError(JSON.stringify(e) ,'500')
+      }
     },
     deleteUser: async (_: any, args: IUserService.IDeleteUserPayload, contextValue: any) => {
+      try{
       // let user: any = authenticate(contextValue.token)
         const payload: IUserService.IDeleteUserPayload = args;
         const response: IUserService.IDeleteUserResponse = await await proxy.user.deleteUser(payload);
-        return response.data
+        return response.data;
+      }catch(e){
+        return new ApolloError(JSON.stringify(e) ,'500')
+      }
     },
     loginUser: async (_: any, args: any) => {
+      try{
         const payload: IUserService.ILoginPayload = args;
         const response: IUserService.ILoginResponse = await proxy.user.loginUser(payload);
         return response.data
+      }catch(e){
+        return new ApolloError(JSON.stringify(e) ,'500')
+      }
     }
   }
 };

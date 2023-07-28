@@ -1,6 +1,5 @@
 import { User as IUSER } from "../../utils/interface/IUser";
 import { UserModel } from "../../db/users";
-import mongoose from 'mongoose';
 import * as IUserService from "./IUserService";
 import { handleDbError } from "../../helper/handleDbError";
 import { dbError } from "../../utils/interface/common";
@@ -13,7 +12,6 @@ export default class UserStore {
 			this.code = code;
 		}
 	};
-
 	/**
 	 * creating new user and saving in Database
 	 */
@@ -59,6 +57,7 @@ export default class UserStore {
 			return resultUser
 		}
 	}
+
 	/**
 	 * 
 	 * getAll users
@@ -74,6 +73,7 @@ export default class UserStore {
 			return result
 		}
 	}
+
 	/**
 	 * Update user by id
 	 */
@@ -89,6 +89,7 @@ export default class UserStore {
 			return result
 		}
 	}
+	
 	/**
 	 * Delete User By Id
 	 */
