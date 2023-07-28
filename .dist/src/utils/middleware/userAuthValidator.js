@@ -1,3 +1,4 @@
+"use strict";
 // import { ApolloError } from "apollo-server-express";
 // export const useAuthValidator = (context) => {
 //   const { user: currentUser } = context.req;

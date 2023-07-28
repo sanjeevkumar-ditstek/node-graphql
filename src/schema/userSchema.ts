@@ -1,13 +1,25 @@
 import { gql } from "apollo-server-express"; //will create a schema
 const UserTypeDefs = gql`
   type User {
-    _id: String!,
+    _id: String,
     firstname: String,
     lastname: String,
     email: String,
     password: String,
     age: Int,
-    roles: [Role]
+    #roles: [Role]
+  }
+
+  type Error {
+  message: String,
+  code: String,
+}
+  
+  type UserResponse{
+    user: User,
+    statusCode: Int,
+    message: String,
+    error: Error
   }
   type Login {
     token: String!
@@ -24,7 +36,7 @@ const UserTypeDefs = gql`
     email: String,
     password: String,
     age: Int,
-    role: String,
+    #role: String,
   }
 
   input UserUpdateProps {
@@ -33,7 +45,7 @@ const UserTypeDefs = gql`
     email: String,
     password: String,
     age: Int,
-    role: String,
+    #role: String,
   }
 
   type Mutation {
@@ -43,7 +55,6 @@ const UserTypeDefs = gql`
     updateUser(id: String,data: UserUpdateProps): User
     deleteUser(id: String): User
     loginUser(email: String,password: String): Login
-    userLogs([User],[User]): [User]
   }
   `;
 

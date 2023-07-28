@@ -1,5 +1,5 @@
 import { User as IUSER, UpdateUser as IUPDATEUSER } from "../../utils/interface/IUser";
-import { IResponse } from "../../utils/interface/common";
+import { IResponse, dbError } from "../../utils/interface/common";
 import { Request } from "express";
 
 export interface IUserServiceAPI {
@@ -17,7 +17,16 @@ export interface IRegisterUserPayload {
 	email: string;
 	password: string;
 	age: number;
-	role: string;
+	// role: string;
+}
+export interface IRegisterUserArgsPayload {
+	data: {firstname: string;
+	lastname: string;
+	email: string;
+	password: string;
+	age: number;
+	// role: string;
+	}
 }
 
 export interface IUpdateUserPayload {
@@ -49,11 +58,13 @@ export interface IGetUserResponse extends IResponse {
 	user?: IUSER;
 }
 
-export interface IGetAllUserRequest extends Request {
-
-}
 export interface IGetAllUserResponse extends IResponse {
 	users?: IUSER[];
+}
+export interface IGetUserArgsPayload {
+	data: {
+		id: string;
+	}
 }
 export interface IGetUserPayload {
 	id: string;
@@ -86,4 +97,19 @@ export interface ILogsPayload {
 
 export interface ILogsResponse extends IResponse {
 	usersLogs?: [IUSER];
+}
+
+export interface IUserDbResponse {
+	user?: IUSER | null
+	error?: dbError;
+}
+
+export interface IGetUserListDbResponse {
+	users?: IUSER[] | null
+	error?: dbError;
+}
+
+export interface IUpdateUserDbResponse {
+	user?: IUPDATEUSER | null
+	error?: dbError;
 }

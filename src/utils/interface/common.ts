@@ -7,19 +7,22 @@ export interface IResponse {
 	message: string;
 	data: any
 	status: boolean;
-
 }
 
 export interface IError {
-	message?: string;
-	status?: ErrorMessageEnum;
+	message?: any;
+}
+
+export interface dbError{
+	message: string,
+	code?: string,
 }
 
 export function joiToError(joiError: any): IError {
 	let message = "There was an error processing your request. Please contact support.";
 	if (joiError && joiError.details && joiError.details[0]) {
 		message = joiError.details[0].message;
-	} else {
+	} else {	
 		message = joiError.message;
 	}
 

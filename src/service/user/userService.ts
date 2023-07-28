@@ -4,14 +4,19 @@ import { User as IUSER } from "../../utils/interface/IUser";
 import STATUS_CODES from "../../utils/enum/statusCodes";
 import ErrorMessageEnum from "../../utils/enum/errorMessage";
 import responseMessage from "../../utils/enum/responseMessage";
-import * as IRoleService from "../role/IRoleService";
+// import * as IRoleService from "../role/IRoleService";
 import * as IUserService from "./IUserService";
 import { IAppServiceProxy } from "../appServiceProxy";
-import { toError } from "../../utils/interface/common";
+import { dbError, toError } from "../../utils/interface/common";
 import { apiResponse } from "../../helper/apiResonse";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from 'dotenv';
+import { handleDbError } from "../../helper/handleDbError";
+import { JoiValidate } from "../../helper/JoiValidate";
+import { userCreateSchema } from "../../utils/joiSchema/schema";
+import { JoiError } from "../../helper/joiErrorHandler";
+import { ApolloError } from "apollo-server-express";
 dotenv.config();
 
 export default class UserService implements IUserService.IUserServiceAPI {
@@ -27,50 +32,50 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			id: user.id,
 			email: user.email,
 		};
-		return jwt.sign(payLoad, process.env.JWT_SECRET);
+		return jwt.sign(payLoad, "process.env.JWT_SECRET");
 	};
 
 	public create = async (payload: IUserService.IRegisterUserPayload) => {
+		// try{
 		const response: IUserService.IRegisterUserResponse = {
 			statusCode: STATUS_CODES.UNKNOWN_CODE,
 			status: false,
 			data: null,
 			message: ""
 		};
-		const schema = Joi.object().keys({
-			firstname: Joi.string().required(),
-			lastname: Joi.string().required(),
-			email: Joi.string().email().required(),
-			password: Joi.string().required(),
-			age: Joi.number().required(),
-			role: Joi.string().required(),
-		});
-		const params = schema.validate(payload);
-		if (params.error) {
-			console.error(params.error);
-			return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, params.error);
-		}
-		const { firstname, lastname, email, password, age, role } = payload;
 
-		// Check if email is already registered
-		let existingUser: IUSER;
+		const {error , value} = JoiValidate(userCreateSchema , payload)
+		if (error) {
+			console.error(error);
+			const joiErr = JoiError(error)
+			// return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
+			return new ApolloError(JSON.stringify(joiErr) ,'unknown');
+
+		}
+		const { firstname, lastname, email, password, age } = value;
+		// Check if email is already registered...
+
+		let existingUser: IUserService.IUserDbResponse;
 		try {
-			existingUser = await this.userStore.getByEmail(email);
+			existingUser = (await this.userStore.getByEmail(email))
 			//Error if email id is already exist
-			if (existingUser && existingUser?.email) {
-				return apiResponse(STATUS_CODES.BAD_REQUEST, ErrorMessageEnum.EMAIL_ALREADY_EXIST, response, false, toError(ErrorMessageEnum.EMAIL_ALREADY_EXIST));
+			if (existingUser && existingUser?.user?.email) {
+			const Error: dbError =	 {message: ErrorMessageEnum.EMAIL_ALREADY_EXIST};
+
+				return apiResponse(STATUS_CODES.BAD_REQUEST, ErrorMessageEnum.EMAIL_ALREADY_EXIST, null, false,Error );
 			}
 		} catch (e) {
 			console.error(e);
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, response, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, response, false, e);
 		}
-		let rolePayload: IRoleService.IgetRoleByNamePayload = { role };
-		let roleResponse: IRoleService.IgetRoleByNameResponse = await this.proxy.role.getByName(rolePayload);
 
-		if (roleResponse.statusCode !== STATUS_CODES.OK) {
-			return roleResponse;
-		}
-		let user: IUSER;
+		// let rolePayload: IRoleService.IgetRoleByNamePayload = { role };
+		// let roleResponse: IRoleService.IgetRoleByNameResponse = await this.proxy.role.getByName(rolePayload);
+
+		// if (roleResponse.statusCode !== STATUS_CODES.OK) {
+		// 	return roleResponse;
+		// }
+		let result: IUserService.IUserDbResponse;
 		try {
 			const hashPassword = await bcrypt.hash(password, 10);
 			const attributes: IUSER = {
@@ -79,52 +84,33 @@ export default class UserService implements IUserService.IUserServiceAPI {
 				email: email.toLowerCase(),
 				password: hashPassword,
 				age,
-				role: roleResponse.data._id
+				// role: roleRe_idsponse.data.
 			};
-			user = await this.userStore.createUser(attributes);
-			return apiResponse(STATUS_CODES.OK, responseMessage.USER_CREATED, user, true, null)
+			result = await this.userStore.createUser(attributes);
+			
+			if(result.error){
+				console.log(result.error , "error")
+					return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, result.error)
+			}
+			return apiResponse(STATUS_CODES.OK, responseMessage.USER_CREATED, result.user, true, null)
 		} catch (e) {
-			console.error(e);
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
-	};
-
+	}
+	
 	public updateUser = async (payload: IUserService.IUpdateUserPayload) => {
 		const response: IUserService.IUpdateUserResponse = {
 			statusCode: STATUS_CODES.UNKNOWN_CODE,
-			message: null,
+			message: responseMessage.INVALID_EMAIL_OR_CODE,
 			data: null,
 			status: false
 		};
-		let schemaPayload: any = {};
-		(Object.keys(payload.data) as (keyof typeof payload.data)[]).forEach((key, index) => {
-			if (key === 'firstname') {
-				schemaPayload[key] = Joi.string().required()
-			}
-			if (key === 'lastname') {
-				schemaPayload[key] = Joi.string().required()
-			}
-			if (key === 'email') {
-				schemaPayload[key] = Joi.string().email().required()
-			}
-			if (key === 'password') {
-				schemaPayload[key] = Joi.string().required()
-			}
-			if (key === 'age') {
-				schemaPayload[key] = Joi.number().required()
-			}
-			if (key === 'role') {
-				schemaPayload[key] = Joi.string().required()
-			}
-		});
-
-		const schema = Joi.object().keys(schemaPayload);
-		const params = schema.validate(payload.data);
-		if (params.error) {
-			console.error(params.error);
-			return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, params.error);
+		const {error , value} = JoiValidate(userCreateSchema , payload)
+		if (error) {
+			console.error(error);
+			return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, error);
 		}
-		let existingUser: IUSER;
+		let existingUser: IUserService.IUserDbResponse;
 		try {
 			existingUser = await this.userStore.getById(payload.id);
 			if (!existingUser) {
@@ -132,67 +118,67 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			}
 		} catch (e) {
 			console.error(e);
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 		try {
-			let result = await this.userStore.updateUserById(payload.id, payload.data)
-			return apiResponse(STATUS_CODES.OK, responseMessage.USER_UPDATED, result, true, null)
+			const result = await this.userStore.updateUserById(payload.id, payload.data)
+			return apiResponse(STATUS_CODES.OK, responseMessage.USER_UPDATED, result.user, true, null)
 		}
 		catch (e) {
 			console.error(e);
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
 
 	public deleteUser = async (payload: IUserService.IDeleteUserPayload) => {
-		let { id } = payload;
+		const { id } = payload;
 		const response: IUserService.IDeleteUserResponse = {
 			statusCode: STATUS_CODES.UNKNOWN_CODE,
-			message: null,
+			message: responseMessage.INVALID_EMAIL_OR_CODE,
 			data: null,
 			status: false
 		};
-		let existingUser: IUSER;
+		let existingUser: IUserService.IUserDbResponse;
 		try {
 			existingUser = await this.userStore.getById(id);
 			if (!existingUser) {
 				return apiResponse(STATUS_CODES.BAD_REQUEST, ErrorMessageEnum.USER_NOT_EXIST, null, false, toError(ErrorMessageEnum.USER_NOT_EXIST));
 			}
 		} catch (e) {
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 		try {
-			let result = await this.userStore.deleteUserById(id);
-			return apiResponse(STATUS_CODES.OK, responseMessage.USER_DELETED, result, true, null)
+			const result = await this.userStore.deleteUserById(id);
+			return apiResponse(STATUS_CODES.OK, responseMessage.USER_DELETED, result.user, true, null)
 		}
 		catch (e) {
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
 
 	public getUsers = async () => {
 		const response: IUserService.IGetAllUserResponse = {
 			statusCode: STATUS_CODES.UNKNOWN_CODE,
-			message: null,
+			message: responseMessage.INVALID_EMAIL_OR_CODE,
 			data: null,
 			status: false
 		};
-		let users: IUSER[];
+		let result: IUserService.IGetUserListDbResponse;
 		try {
-			users = await this.userStore.getAll();
-			return apiResponse(STATUS_CODES.OK, responseMessage.USERS_FETCHED, users, true, null);
+			result = await this.userStore.getAll();
+			return apiResponse(STATUS_CODES.OK, responseMessage.USERS_FETCHED, result.users, true, null);
 		} catch (e) {
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
 
 	public getUser = async (payload: IUserService.IGetUserPayload) => {
-		let user: IUSER;
+		let result: IUserService.IUserDbResponse;
 		try {
-			user = await this.userStore.getById(payload.id);
-			return apiResponse(STATUS_CODES.OK, responseMessage.USER_FETCHED, user, true, null);
+			result = await this.userStore.getById(payload.id);
+			return apiResponse(STATUS_CODES.OK, responseMessage.USER_FETCHED, result.user, true, null);
 		} catch (e) {
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
 
@@ -201,31 +187,30 @@ export default class UserService implements IUserService.IUserServiceAPI {
 		const { email, password } = payload;
 		const response: IUserService.ILoginResponse = {
 			statusCode: STATUS_CODES.UNKNOWN_CODE,
-			message: null,
+			message: responseMessage.INVALID_EMAIL_OR_CODE,
 			data: null,
 			status: false
 		};
-		let user: IUSER;
+		let result: IUserService.IUserDbResponse;
 		try {
-			user = await this.userStore.getByEmail(payload.email);
-			if (!user) {
+			result = await this.userStore.getByEmail(payload.email);
+			if (!result) {
 				return apiResponse(STATUS_CODES.BAD_REQUEST, ErrorMessageEnum.USER_NOT_EXIST, null, false, toError(ErrorMessageEnum.USER_NOT_EXIST));
 			}
-			const isValid = await bcrypt.compare(password, user?.password);
-
-			//if isValid or user.password is null
-			if (!isValid || !user?.password) {
+			const isValid = await bcrypt.compare(password, result?.user ? result?.user?.password: "" );
+			if (!isValid || !result.user?.password) {
 				const errorMsg = ErrorMessageEnum.INVALID_CREDENTIALS;
 				response.statusCode = STATUS_CODES.UNAUTHORIZED;
 				response.error = toError(errorMsg);
 				return response;
 			}
 			response.statusCode = STATUS_CODES.OK;
-			response.token = this.generateJWT(user);
-			response.user = user;
+			response.token = this.generateJWT(result.user);
+			response.user = result.user;
 			return apiResponse(STATUS_CODES.OK, responseMessage.USER_FETCHED, response, true, null);
 		} catch (e) {
-			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
+			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
+
 }

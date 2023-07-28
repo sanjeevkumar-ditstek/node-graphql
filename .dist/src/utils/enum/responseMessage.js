@@ -1,0 +1,22 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReponseMessageEnum;
+(function (ReponseMessageEnum) {
+    ReponseMessageEnum["USER_CREATED"] = "User created succesfully!";
+    ReponseMessageEnum["USER_UPDATED"] = "User updated succesfully!";
+    ReponseMessageEnum["ROLE_UPDATED"] = "Role updated succesfully!";
+    ReponseMessageEnum["USER_DELETED"] = "User deleted succesfully!";
+    ReponseMessageEnum["ROLE_DELETED"] = "Role deleted succesfully!";
+    ReponseMessageEnum["RECORD_NOT_FOUND"] = "Record Not Found";
+    ReponseMessageEnum["INVALID_USER_ID"] = "Invalid User Id";
+    ReponseMessageEnum["INVALID_EMAIL_OR_CODE"] = "Invalid Email or Code!!";
+    ReponseMessageEnum["SET_YOUR_PASSWORD"] = "Please set you password first!!";
+    ReponseMessageEnum["INVALID_CREDENTIALS"] = " Invalid credentials";
+    ReponseMessageEnum["EMAIL_ALREADY_EXIST"] = "Email Already Exist";
+    ReponseMessageEnum["INVALID_UUID"] = "Invalid UUID";
+    ReponseMessageEnum["USERS_FETCHED"] = "All Users Fetched Successfully!";
+    ReponseMessageEnum["USER_FETCHED"] = "User Fetched Successfully!";
+    ReponseMessageEnum["ROLES_FETCHED"] = "All Roles Fetched Successfully!";
+    ReponseMessageEnum["ROLE_FETCHED"] = "Role Fetched Successfully!";
+})(ReponseMessageEnum || (ReponseMessageEnum = {}));
+exports.default = ReponseMessageEnum;

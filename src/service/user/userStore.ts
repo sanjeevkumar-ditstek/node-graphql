@@ -1,79 +1,107 @@
 import { User as IUSER } from "../../utils/interface/IUser";
 import { UserModel } from "../../db/users";
 import mongoose from 'mongoose';
+import * as IUserService from "./IUserService";
+import { handleDbError } from "../../helper/handleDbError";
+import { dbError } from "../../utils/interface/common";
 
 export default class UserStore {
 	public static OPERATION_UNSUCCESSFUL = class extends Error {
-		constructor() {
-			super("An error occured while processing the request.");
+		public code: string;
+		constructor(message =  "An error occured while processing the request.", code: string ) {
+			super(message);
+			this.code = code;
 		}
 	};
 
 	/**
 	 * creating new user and saving in Database
 	 */
-	public async createUser(userInput: IUSER): Promise<IUSER> {
+	public async createUser(userInput: IUSER): Promise<IUserService.IUserDbResponse> {
+		const savedUser: IUserService.IUserDbResponse = {}
 		try {
-			const { firstname, lastname, email, password, age, role } = userInput;
-			let savedUser: any = (await (await UserModel.create({ firstname, lastname, email, password, age, roles: new mongoose.Types.ObjectId(role) })).populate('roles')).toJSON()
-
-			console.log(savedUser, "SSSSSSSSS")
+			const { firstname, lastname, email, password, age } = userInput;
+			savedUser.user =  (await (await UserModel.create({ firstname, lastname, email, password, age })).populate('roles')).toJSON()
 			return savedUser;
-		} catch (error) {
-			console.log(error, "errrr")
-			return error;
+		} catch (error:any) {
+			const Error: dbError =	 handleDbError(error);
+			savedUser.error = Error
+			return savedUser
 		}
 	}
 
 	/**
 	 *Get by email
 	 */
-	public async getByEmail(email: string): Promise<IUSER> {
+	public async getByEmail(email: string): Promise<IUserService.IUserDbResponse> {
+		const resultUser: IUserService.IUserDbResponse = {}
 		try {
-			let user: any = await UserModel.findOne({ email });
-			return user;
-		} catch (e) {
-			return Promise.reject(new UserStore.OPERATION_UNSUCCESSFUL());
+			resultUser.user = await UserModel.findOne({  email })
+			return resultUser;
+		} catch (error:any) {
+			const Error: dbError = handleDbError(error);
+			resultUser.error = Error
+			return resultUser
 		}
 	}
 
 	/**
 	 *Get by id
 	 */
-	public async getById(id: string): Promise<IUSER> {
+	public async getById(id: string): Promise<IUserService.IUserDbResponse> {
+		const resultUser: IUserService.IUserDbResponse = {}
 		try {
-			let user: any = await UserModel.findOne({ _id: id });
-			return user;
-		} catch (e) {
-			return Promise.reject(new UserStore.OPERATION_UNSUCCESSFUL());
+			resultUser.user = await UserModel.findOne({ _id: id })
+			return resultUser;
+		} catch (error:any) {
+			const Error: dbError = handleDbError(error);
+			resultUser.error = Error
+			return resultUser
 		}
 	}
-
-	public async getAll(): Promise<IUSER[]> {
+	/**
+	 * 
+	 * getAll users
+	 */
+	public async getAll(): Promise<IUserService.IGetUserListDbResponse> {
+		const result: IUserService.IGetUserListDbResponse = {}
 		try {
-			let users: any = await UserModel.find();
-			return users;
-		} catch (e) {
-			return Promise.reject(new UserStore.OPERATION_UNSUCCESSFUL());
+			result.users = await UserModel.find({})
+			return result;
+		} catch (error:any) {
+			const Error: dbError = handleDbError(error);
+			result.error = Error
+			return result
 		}
 	}
-
-	public async updateUserById(id: string, payload: any): Promise<IUSER> {
+	/**
+	 * Update user by id
+	 */
+	public async updateUserById(id: string, payload: any): Promise<IUserService.IUserDbResponse> {
+		const result: IUserService.IUserDbResponse = {}
 		try {
-			await UserModel.findOneAndUpdate({ _id: id }, payload);
-			return await UserModel.findOne({ _id: id });
-
-		} catch (e) {
-			return Promise.reject(new UserStore.OPERATION_UNSUCCESSFUL());
+			await UserModel.findOneAndUpdate({_id: id} , payload)
+			result.user = { id , ...payload}
+			return result;
+		} catch (error:any) {
+			const Error: dbError = handleDbError(error);
+			result.error = Error
+			return result
 		}
 	}
-
-	public async deleteUserById(id: string): Promise<IUSER> {
+	/**
+	 * Delete User By Id
+	 */
+	public async deleteUserById(id: string): Promise<IUserService.IUpdateUserDbResponse> {
+		const result: IUserService.IUpdateUserDbResponse = {}
 		try {
-			return await UserModel.findOneAndDelete({ _id: id });
-		} catch (e) {
-			return Promise.reject(new UserStore.OPERATION_UNSUCCESSFUL());
+			await UserModel.findOneAndDelete({ _id: id });
+			result.user = {id}
+			return result;
+		} catch (error:any) {
+			const Error: dbError = handleDbError(error);
+			result.error = Error
+			return result
 		}
 	}
-
 }
