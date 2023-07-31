@@ -7,11 +7,13 @@ export const apiResponse = (
   status: boolean,
   error: any
 ) => {
+
+
   return {
     status,
     error,
     statusCode,
     message,
-    ...data
+    data
   };
 };

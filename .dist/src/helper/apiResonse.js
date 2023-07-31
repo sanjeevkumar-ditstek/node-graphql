@@ -7,7 +7,7 @@ const apiResponse = (statusCode, message, data, status, error) => {
         error,
         statusCode,
         message,
-        ...data
+        data
     };
 };
 exports.apiResponse = apiResponse;

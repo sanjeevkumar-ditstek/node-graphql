@@ -56,7 +56,9 @@ class UserStore {
     async getAll() {
         const result = {};
         try {
+            console.log("gettt all usress");
             result.users = await users_1.UserModel.find({});
+            console.log(result, "sdfnadshfvjd");
             return result;
         }
         catch (error) {

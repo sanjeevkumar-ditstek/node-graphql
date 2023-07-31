@@ -9,6 +9,8 @@ import routes from "../routes/index";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { 
+  ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 import typeDefs from "../schema";
 import resolvers from "../resolvers";
 import { json } from "body-parser";
@@ -62,6 +64,7 @@ export class Server {
       resolvers,
       plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
+        ApolloServerPluginLandingPageDisabled(),
         {
           async requestDidStart(initialRequestContext) {
             return {
@@ -86,6 +89,10 @@ export class Server {
         },
       ],
       formatError: (formattedError, error) => {
+        if(formattedError.message === "This operation has been blocked as a potential Cross-Site Request Forgery (CSRF). Please either specify a 'content-type' header (with a type that is not one of application/x-www-form-urlencoded, multipart/form-data, text/plain) or provide a non-empty value for one of the following headers: x-apollo-operation-name, apollo-require-preflight\n"){
+          return {message: formattedError.message, statusCode: 404 };
+        }
+        // const error = getErrorCode(err.)
         return formattedError;
       },
     });

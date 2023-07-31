@@ -26,7 +26,6 @@ export default class UserService implements IUserService.IUserServiceAPI {
 	constructor(proxy: IAppServiceProxy) {
 		this.proxy = proxy;
 	}
-
 	private generateJWT = (user: IUSER): string => {
 		const payLoad = {
 			id: user.id,
@@ -43,25 +42,21 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			data: null,
 			message: ""
 		};
-
 		const {error , value} = JoiValidate(userCreateSchema , payload)
 		if (error) {
 			console.error(error);
 			const joiErr = JoiError(error)
 			// return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
 			return new ApolloError(JSON.stringify(joiErr) ,'unknown');
-
 		}
 		const { firstname, lastname, email, password, age } = value;
 		// Check if email is already registered...
-
 		let existingUser: IUserService.IUserDbResponse;
 		try {
 			existingUser = (await this.userStore.getByEmail(email))
 			//Error if email id is already exist
 			if (existingUser && existingUser?.user?.email) {
 			const Error: dbError =	 {message: ErrorMessageEnum.EMAIL_ALREADY_EXIST};
-
 				return apiResponse(STATUS_CODES.BAD_REQUEST, ErrorMessageEnum.EMAIL_ALREADY_EXIST, null, false,Error );
 			}
 		} catch (e) {
@@ -164,10 +159,13 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			status: false
 		};
 		let result: IUserService.IGetUserListDbResponse;
+		console.log("i m herge")
 		try {
 			result = await this.userStore.getAll();
 			return apiResponse(STATUS_CODES.OK, responseMessage.USERS_FETCHED, result.users, true, null);
 		} catch (e) {
+
+			console.log(e, "eeee")
 			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
@@ -212,5 +210,4 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};
-
 }

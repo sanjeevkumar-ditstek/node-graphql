@@ -9,14 +9,25 @@ const statusCodes_1 = __importDefault(require("../utils/enum/statusCodes"));
 const userResolvers = {
     Query: {
         getAllUsers: async (_, contextValue) => {
-            // let user: any = authenticate(contextValue.token)
-            const response = await appServiceProxy_1.default.user.getUsers();
-            return response.data;
+            try {
+                // let user: any = authenticate(contextValue.token)
+                const response = await appServiceProxy_1.default.user.getUsers();
+                console.log(response.data, "gghdskdkjadskajljfalfjlaflajfldsajflkdsjflkdajfldsjf");
+                return response.data;
+            }
+            catch (e) {
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), '500');
+            }
         },
         getUser: async (_, args, contextValue) => {
-            // let user: any = authenticate(contextValue.token)
-            const response = await appServiceProxy_1.default.user.getUser(args.data);
-            return response.data;
+            try {
+                // let user: any = authenticate(contextValue.token)
+                const response = await appServiceProxy_1.default.user.getUser(args.data);
+                return response.data;
+            }
+            catch (e) {
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), '500');
+            }
         }
     },
     Mutation: {
@@ -31,32 +42,47 @@ const userResolvers = {
                     //   response.error?.message,
                     //   response.status.toString()
                 }
-                return response;
+                return response.data;
             }
             catch (e) {
                 console.log(e);
-                // throw e;
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), '500');
             }
         },
         updateUser: async (_, args, contextValue) => {
-            // let user: any = authenticate(contextValue.token)
-            const payload = args.data;
-            const response = await appServiceProxy_1.default.user.updateUser({ id: args.id, data: payload });
-            if (response.statusCode !== statusCodes_1.default.OK) {
-                throw new apollo_server_express_1.ApolloError(response.error?.message, response.status.toString());
+            try {
+                // let user: any = authenticate(contextValue.token)
+                const payload = args.data;
+                const response = await appServiceProxy_1.default.user.updateUser({ id: args.id, data: payload });
+                if (response.statusCode !== statusCodes_1.default.OK) {
+                    throw new apollo_server_express_1.ApolloError(response.error?.message, response.status.toString());
+                }
+                return response.data;
             }
-            return response.data;
+            catch (e) {
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), '500');
+            }
         },
         deleteUser: async (_, args, contextValue) => {
-            // let user: any = authenticate(contextValue.token)
-            const payload = args;
-            const response = await await appServiceProxy_1.default.user.deleteUser(payload);
-            return response.data;
+            try {
+                // let user: any = authenticate(contextValue.token)
+                const payload = args;
+                const response = await await appServiceProxy_1.default.user.deleteUser(payload);
+                return response.data;
+            }
+            catch (e) {
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), '500');
+            }
         },
         loginUser: async (_, args) => {
-            const payload = args;
-            const response = await appServiceProxy_1.default.user.loginUser(payload);
-            return response.data;
+            try {
+                const payload = args;
+                const response = await appServiceProxy_1.default.user.loginUser(payload);
+                return response.data;
+            }
+            catch (e) {
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), '500');
+            }
         }
     }
 };

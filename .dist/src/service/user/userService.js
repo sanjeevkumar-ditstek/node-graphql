@@ -150,11 +150,13 @@ class UserService {
                 status: false
             };
             let result;
+            console.log("i m herge");
             try {
                 result = await this.userStore.getAll();
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USERS_FETCHED, result.users, true, null);
             }
             catch (e) {
+                console.log(e, "eeee");
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
             }
         };

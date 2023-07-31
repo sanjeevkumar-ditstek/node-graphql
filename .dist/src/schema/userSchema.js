@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const apollo_server_express_1 = require("apollo-server-express"); //will create a schema
 const UserTypeDefs = (0, apollo_server_express_1.gql) `
   type User {
-    _id: String,
+    _id: String!,
     firstname: String,
     lastname: String,
     email: String,

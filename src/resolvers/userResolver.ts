@@ -26,6 +26,8 @@ const userResolvers = {
       try{
       // let user: any = authenticate(contextValue.token)
       const response: IUserService.IGetAllUserResponse = await proxy.user.getUsers()
+
+      console.log(response.data, "gghdskdkjadskajljfalfjlaflajfldsajflkdsjflkdajfldsjf")
         return response.data;
       }catch(e){
         return new ApolloError(JSON.stringify(e) ,'500')

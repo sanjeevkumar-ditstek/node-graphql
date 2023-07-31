@@ -65,7 +65,10 @@ export default class UserStore {
 	public async getAll(): Promise<IUserService.IGetUserListDbResponse> {
 		const result: IUserService.IGetUserListDbResponse = {}
 		try {
+			console.log("gettt all usress")
 			result.users = await UserModel.find({})
+			console.log(result , 
+				"sdfnadshfvjd")
 			return result;
 		} catch (error:any) {
 			const Error: dbError = handleDbError(error);
