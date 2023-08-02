@@ -1,5 +1,16 @@
 import { gql } from "apollo-server-express"; //will create a schema
 const UserTypeDefs = gql`
+  scalar Upload
+
+  type File {
+    filename: String!
+    mimetype: String!
+    encoding: String!
+  }
+  type SuccessMessage {
+    message: String
+  }
+
   type User {
     _id: String!,
     firstname: String,
@@ -25,6 +36,7 @@ const UserTypeDefs = gql`
     token: String!
     user: User
   }
+
   type Query{ 
     getAllUsers: [User],
     getUser(id: String): User
@@ -55,6 +67,8 @@ const UserTypeDefs = gql`
     updateUser(id: String,data: UserUpdateProps): User
     deleteUser(id: String): User
     loginUser(email: String,password: String): Login
+    singleUpload(file: Upload!): SuccessMessage
+    multipleUpload(file: [Upload]!): SuccessMessage
   }
   `;
 

@@ -1,4 +1,3 @@
-import Joi from "joi";
 import UserStore from "./userStore";
 import { User as IUSER } from "../../utils/interface/IUser";
 import STATUS_CODES from "../../utils/enum/statusCodes";
@@ -12,7 +11,6 @@ import { apiResponse } from "../../helper/apiResonse";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from 'dotenv';
-import { handleDbError } from "../../helper/handleDbError";
 import { JoiValidate } from "../../helper/JoiValidate";
 import { userCreateSchema } from "../../utils/joiSchema/schema";
 import { JoiError } from "../../helper/joiErrorHandler";
@@ -46,8 +44,8 @@ export default class UserService implements IUserService.IUserServiceAPI {
 		if (error) {
 			console.error(error);
 			const joiErr = JoiError(error)
-			// return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
 			return new ApolloError(JSON.stringify(joiErr) ,'unknown');
+			// return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
 		}
 		const { firstname, lastname, email, password, age } = value;
 		// Check if email is already registered...
@@ -70,6 +68,7 @@ export default class UserService implements IUserService.IUserServiceAPI {
 		// if (roleResponse.statusCode !== STATUS_CODES.OK) {
 		// 	return roleResponse;
 		// }
+
 		let result: IUserService.IUserDbResponse;
 		try {
 			const hashPassword = await bcrypt.hash(password, 10);
@@ -159,13 +158,10 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			status: false
 		};
 		let result: IUserService.IGetUserListDbResponse;
-		console.log("i m herge")
 		try {
 			result = await this.userStore.getAll();
 			return apiResponse(STATUS_CODES.OK, responseMessage.USERS_FETCHED, result.users, true, null);
 		} catch (e) {
-
-			console.log(e, "eeee")
 			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, e);
 		}
 	};

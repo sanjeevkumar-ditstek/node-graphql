@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // import * as IRoleService from "./role/IRoleService";
 const userService_1 = __importDefault(require("./user/userService"));
+const uploadFileService_1 = __importDefault(require("./fileUpload/uploadFileService"));
 class AppServiceProxy {
-    // public role: IRoleService.IRoleServiceAPI;
     constructor() {
         this.user = new userService_1.default(this);
-        // this.role = new RoleService(this);
+        this.uploadFile = new uploadFileService_1.default(this);
     }
 }
 exports.default = new AppServiceProxy();

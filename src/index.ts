@@ -7,6 +7,6 @@ const server = new Server(Number(Port));
 server.start();
 
 mongoose.Promise = Promise
-mongoose.connect("mongodb+srv://amarjeetsingh:hl70HFIFMEhPwgJl@cluster0.tjqtwkl.mongodb.net/test-graphQl?retryWrites=true&w=majority")
+mongoose.connect(process.env.MONGO_URL? process.env.MONGO_URL : "")
 console.log('====mongodb connected!====');
 mongoose.connection.on('error', (error: Error) => console.log(error))

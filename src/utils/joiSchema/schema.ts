@@ -1,5 +1,4 @@
 import Joi from "joi";
-
 export const  userCreateSchema = Joi.object().keys({
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
@@ -20,4 +19,10 @@ export const  userUploadSchema = Joi.object().keys({
 
 export const  getUserSchema = Joi.object().keys({
     id: Joi.string().required() 
+});
+
+export const fileSchema = Joi.object({
+  fileExtension: Joi.string().required(),
+  mimetype: Joi.string().required(),
+  size: Joi.number().positive().greater(0).required()
 });

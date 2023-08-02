@@ -1,4 +1,11 @@
 // import RoleResolvers from "./roleResolver";
 import UserResolvers from "./userResolver";
 
-export default UserResolvers;
+import {GraphQLUpload} from"graphql-upload";
+
+
+const customResolvers = {
+    Upload: GraphQLUpload
+}
+
+export default [customResolvers,UserResolvers];

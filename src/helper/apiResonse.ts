@@ -8,7 +8,6 @@ export const apiResponse = (
   error: any
 ) => {
 
-
   return {
     status,
     error,

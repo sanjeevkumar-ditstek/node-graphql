@@ -14,7 +14,6 @@
 // export default class RoleService implements IRoleService.IRoleServiceAPI {
 // 	private roleStore = new RoleStore();
 // 	private proxy: IAppServiceProxy;
-
 // 	constructor(proxy: IAppServiceProxy) {
 // 		this.proxy = proxy;
 // 	}
@@ -93,8 +92,6 @@
 // 		}
 // 	};
 
-
-
 // 	public getByName = async (payload: IRoleService.IgetRoleByNamePayload) => {
 // 		const response: IRoleService.IgetRoleByNameResponse = {
 // 			statusCode: STATUS_CODES.UNKNOWN_CODE,
@@ -132,7 +129,7 @@
 // 	public updateRole = async (payload: IRoleService.IUpdateRolePayload) => {
 // 		const response: IRoleService.IUpdateRoleResponse = {
 // 			statusCode: STATUS_CODES.UNKNOWN_CODE,
-// 			message: null,
+// 			message: "null",
 // 			data: null,
 // 			status: false
 // 		};
@@ -155,7 +152,7 @@
 // 			return apiResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, ErrorMessageEnum.INTERNAL_ERROR, null, false, toError(e.message));
 // 		}
 // 		try {
-// 			let result = await this.roleStore.updateRoleById(payload.id, payload.data)
+// 			const result = await this.roleStore.updateRoleById(payload.id, payload.data)
 // 			return apiResponse(STATUS_CODES.OK, responseMessage.ROLE_UPDATED, result, true, null)
 // 		}
 // 		catch (e) {

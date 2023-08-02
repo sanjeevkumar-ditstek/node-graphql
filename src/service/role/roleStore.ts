@@ -69,5 +69,4 @@
 // 			return Promise.reject(new RoleStore.OPERATION_UNSUCCESSFUL());
 // 		}
 // 	}
-
 // }

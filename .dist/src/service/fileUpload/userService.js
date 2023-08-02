@@ -39,8 +39,8 @@ class UserService {
             if (error) {
                 console.error(error);
                 const joiErr = (0, joiErrorHandler_1.JoiError)(error);
-                return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), 'unknown');
                 // return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
+                return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), 'unknown');
             }
             const { firstname, lastname, email, password, age } = value;
             // Check if email is already registered...
@@ -75,7 +75,6 @@ class UserService {
                 };
                 result = await this.userStore.createUser(attributes);
                 if (result.error) {
-                    console.log(result.error, "error");
                     return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, result.error);
                 }
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_CREATED, result.user, true, null);

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserSchema = exports.userUploadSchema = exports.userCreateSchema = void 0;
+exports.fileSchema = exports.getUserSchema = exports.userUploadSchema = exports.userCreateSchema = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.userCreateSchema = joi_1.default.object().keys({
     firstname: joi_1.default.string().required(),
@@ -23,4 +23,9 @@ exports.userUploadSchema = joi_1.default.object().keys({
 });
 exports.getUserSchema = joi_1.default.object().keys({
     id: joi_1.default.string().required()
+});
+exports.fileSchema = joi_1.default.object({
+    fileExtension: joi_1.default.string().required(),
+    mimetype: joi_1.default.string().required(),
+    size: joi_1.default.number().positive().greater(0).required()
 });

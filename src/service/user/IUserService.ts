@@ -62,9 +62,7 @@ export interface IGetAllUserResponse extends IResponse {
 	users?: IUSER[];
 }
 export interface IGetUserArgsPayload {
-	data: {
-		id: string;
-	}
+	id: string;
 }
 export interface IGetUserPayload {
 	id: string;
