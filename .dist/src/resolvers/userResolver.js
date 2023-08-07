@@ -34,8 +34,8 @@ const userResolvers = {
     Mutation: {
         async registerUser(parent, args, contextValue) {
             // let user: any = authenticate(contextValue.token)
-            const payload = args.data;
-            // let response: IUserService.IRegisterUserResponse;
+            const payload = args.data ? args.data : contextValue.args.data;
+            let response;
             try {
                 const response = await appServiceProxy_1.default.user.create(payload);
                 if (!response) {
@@ -95,7 +95,6 @@ const userResolvers = {
             };
         },
         multipleUpload: async (_, file) => {
-            console.log(await file, "file ksjdk");
             const imageUrls = await appServiceProxy_1.default.uploadFile.uploadMultipleFile(await file);
             // const multiplefile = new MultipleFile();
             // multiplefile.images.push(...imageUrl);

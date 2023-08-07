@@ -5,9 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractBearerToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const dotenv_1 = __importDefault(require("dotenv"));
+// import dotenv from 'dotenv';
 // import { GraphQLError } from "graphql";
-dotenv_1.default.config();
+// dotenv.config();
 const extractBearerToken = (req) => {
     try {
         const token = req.headers.authorization;

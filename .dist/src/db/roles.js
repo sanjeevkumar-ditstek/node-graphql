@@ -26,9 +26,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoleModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const RoleSchema = new mongoose_1.Schema({
-    role: {
+    name: {
         type: String,
-        enum: ['ADMIN', 'USER', 'GUEST', 'VIEWER'],
+        // enum : ['ADMIN','USER','GUEST','SUPERADMIN'],
         required: true,
         default: "GUEST"
     }

@@ -1,5 +1,5 @@
 import { Role as IROLE, UpdateRole as IUPDATEROLE } from "../../utils/interface/IRole";
-import { IResponse } from "../../utils/interface/common";
+import { IResponse, dbError } from "../../utils/interface/common";
 import { Request } from "express";
 
 export interface IRoleServiceAPI {
@@ -12,7 +12,7 @@ export interface IRoleServiceAPI {
 }
 
 export interface ICreateRolePayload {
-	role: string;
+	name: string;
 }
 export interface ICreateRoleResponse extends IResponse {
 	role?: IROLE;
@@ -60,4 +60,14 @@ export interface IDeleteRolePayload extends Request {
 }
 export interface IDeleteRoleResponse extends IResponse {
 	role?: IROLE;
+}
+
+export interface IRoleDbResponse {
+	role?: IROLE | null
+	error?: dbError;
+}
+
+export interface IGetRoleListDbResponse {
+	roles?: IROLE[] | null
+	error?: dbError;
 }

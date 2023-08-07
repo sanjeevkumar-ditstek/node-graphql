@@ -19,7 +19,7 @@ export default class UserStore {
 		const savedUser: IUserService.IUserDbResponse = {}
 		try {
 			const { firstname, lastname, email, password, age } = userInput;
-			savedUser.user =  (await (await UserModel.create({ firstname, lastname, email, password, age })).populate('roles')).toJSON()
+			savedUser.user =   (await UserModel.create({ firstname, lastname, email, password, age })).toJSON()
 			return savedUser;
 		} catch (error:any) {
 			const Error: dbError =	 handleDbError(error);

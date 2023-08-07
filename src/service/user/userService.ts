@@ -10,12 +10,12 @@ import { dbError, toError } from "../../utils/interface/common";
 import { apiResponse } from "../../helper/apiResonse";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 import { JoiValidate } from "../../helper/JoiValidate";
-import { userCreateSchema } from "../../utils/joiSchema/schema";
+import { getUserSchema, userCreateSchema } from "../../utils/joiSchema/schema";
 import { JoiError } from "../../helper/joiErrorHandler";
 import { ApolloError } from "apollo-server-express";
-dotenv.config();
+// dotenv.config();
 
 export default class UserService implements IUserService.IUserServiceAPI {
 	private userStore = new UserStore();
@@ -47,7 +47,7 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			return new ApolloError(JSON.stringify(joiErr) ,'unknown');
 			// return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
 		}
-		const { firstname, lastname, email, password, age } = value;
+		const { firstname, lastname, email, password, age ,role } = value;
 		// Check if email is already registered...
 		let existingUser: IUserService.IUserDbResponse;
 		try {
@@ -78,7 +78,7 @@ export default class UserService implements IUserService.IUserServiceAPI {
 				email: email.toLowerCase(),
 				password: hashPassword,
 				age,
-				// role: roleRe_idsponse.data.
+				role
 			};
 			result = await this.userStore.createUser(attributes);
 			
@@ -99,6 +99,13 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			data: null,
 			status: false
 		};
+
+		const result = JoiValidate(getUserSchema , {id: payload.id})
+		if (result.error) {
+			console.error(result.error);
+			return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, {}, false, result.error);
+		}
+
 		const {error , value} = JoiValidate(userCreateSchema , payload)
 		if (error) {
 			console.error(error);
@@ -132,6 +139,14 @@ export default class UserService implements IUserService.IUserServiceAPI {
 			data: null,
 			status: false
 		};
+
+		const result = JoiValidate(getUserSchema , payload)
+		if (result.error) {
+			console.error(result.error);
+			return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, {}, false, result.error);
+		}
+
+
 		let existingUser: IUserService.IUserDbResponse;
 		try {
 			existingUser = await this.userStore.getById(id);
@@ -169,6 +184,11 @@ export default class UserService implements IUserService.IUserServiceAPI {
 	public getUser = async (payload: IUserService.IGetUserPayload) => {
 		let result: IUserService.IUserDbResponse;
 		try {
+			const resultId = JoiValidate(getUserSchema , payload)
+		if (resultId.error) {
+			console.error(resultId.error);
+			return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, [], false, resultId.error);
+		}
 			result = await this.userStore.getById(payload.id);
 			return apiResponse(STATUS_CODES.OK, responseMessage.USER_FETCHED, result.user, true, null);
 		} catch (e) {

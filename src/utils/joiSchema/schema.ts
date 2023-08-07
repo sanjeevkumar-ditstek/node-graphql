@@ -5,7 +5,7 @@ export const  userCreateSchema = Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
     age: Joi.number().required(),
-    // role: Joi.string().required(),
+    role: Joi.string().required(),
 });
 
 export const  userUploadSchema = Joi.object().keys({
@@ -14,7 +14,7 @@ export const  userUploadSchema = Joi.object().keys({
     email: Joi.string().email(),
     password: Joi.string(),
     age: Joi.number(),
-    // role: Joi.string().required(),
+    role: Joi.string().required(),
 });
 
 export const  getUserSchema = Joi.object().keys({
@@ -26,3 +26,12 @@ export const fileSchema = Joi.object({
   mimetype: Joi.string().required(),
   size: Joi.number().positive().greater(0).required()
 });
+
+export const roleSchema = Joi.object().keys({
+    role: Joi.string().required(),
+});
+
+export const getRoleSchema = Joi.object().keys({
+    id: Joi.string().required(),
+})
+

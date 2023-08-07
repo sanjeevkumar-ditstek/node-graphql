@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 // import { GraphQLError } from "graphql";
-dotenv.config();
+// dotenv.config();
 
 export const extractBearerToken = (req: any): string | undefined => {
     try{

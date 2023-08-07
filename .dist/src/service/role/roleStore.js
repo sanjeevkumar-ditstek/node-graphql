@@ -1,67 +1,95 @@
 "use strict";
-// import { Role as IROLE } from "../../utils/interface/IRole";
-// import { RoleModel } from "../../db/roles";
-// export default class RoleStore {
-// 	public static OPERATION_UNSUCCESSFUL = class extends Error {
-// 		constructor() {
-// 			super("An error occured while processing the request.");
-// 		}
-// 	};
-// 	/**
-// 	 * creating new role and saving in Database
-// 	 */
-// 	public async createRole(userInput: IROLE): Promise<IROLE> {
-// 		try {
-// 			const { role } = userInput;
-// 			let savedUser: IROLE = await RoleModel.create({ role });
-// 			return savedUser;
-// 		} catch (error) {
-// 			return error;
-// 		}
-// 	}
-// 	/**
-// 	 *Get by email
-// 	 */
-// 	public async getByName(role: string): Promise<IROLE> {
-// 		try {
-// 			let result: any = await RoleModel.findOne({ role: role });
-// 			return result;
-// 		} catch (e) {
-// 			return Promise.reject(new RoleStore.OPERATION_UNSUCCESSFUL());
-// 		}
-// 	}
-// 	/**
-// 	 *Get by id
-// 	 */
-// 	public async getById(id: string): Promise<IROLE> {
-// 		try {
-// 			let result: IROLE = await RoleModel.findOne({ _id: id });
-// 			return result;
-// 		} catch (e) {
-// 			return Promise.reject(new RoleStore.OPERATION_UNSUCCESSFUL());
-// 		}
-// 	}
-// 	public async getAll(): Promise<IROLE[]> {
-// 		try {
-// 			let users: IROLE[] = await RoleModel.find();
-// 			return users;
-// 		} catch (e) {
-// 			return Promise.reject(new RoleStore.OPERATION_UNSUCCESSFUL());
-// 		}
-// 	}
-// 	public async updateRoleById(id: string, payload: any): Promise<IROLE> {
-// 		try {
-// 			await RoleModel.findOneAndUpdate({ _id: id }, payload);
-// 			return await RoleModel.findOne({ _id: id });
-// 		} catch (e) {
-// 			return Promise.reject(new RoleStore.OPERATION_UNSUCCESSFUL());
-// 		}
-// 	}
-// 	public async deleteRoleById(id: string): Promise<IROLE> {
-// 		try {
-// 			return await RoleModel.findOneAndDelete({ _id: id });
-// 		} catch (e) {
-// 			return Promise.reject(new RoleStore.OPERATION_UNSUCCESSFUL());
-// 		}
-// 	}
-// }
+Object.defineProperty(exports, "__esModule", { value: true });
+const roles_1 = require("../../db/roles");
+const handleDbError_1 = require("../../helper/handleDbError");
+class RoleStore {
+    /**
+     * creating new role and saving in Database
+     */
+    async createRole(roleInput) {
+        const savedRole = {};
+        try {
+            const { name } = roleInput;
+            savedRole.role = await roles_1.RoleModel.create({ name });
+            return savedRole;
+        }
+        catch (error) {
+            const Error = (0, handleDbError_1.handleDbError)(error);
+            savedRole.error = Error;
+            return savedRole;
+        }
+    }
+    /**
+     *Get by email
+     */
+    async getByName(name) {
+        const resultRole = {};
+        try {
+            resultRole.role = await roles_1.RoleModel.findOne({ name });
+            return resultRole;
+        }
+        catch (error) {
+            const Error = (0, handleDbError_1.handleDbError)(error);
+            resultRole.error = Error;
+            return resultRole;
+        }
+    }
+    /**
+     *Get by id
+     */
+    async getById(id) {
+        const resultRole = {};
+        try {
+            resultRole.role = await roles_1.RoleModel.findOne({ _id: id });
+            return resultRole;
+        }
+        catch (error) {
+            const Error = (0, handleDbError_1.handleDbError)(error);
+            resultRole.error = Error;
+            return resultRole;
+        }
+    }
+    async getAll() {
+        const resultRole = {};
+        try {
+            resultRole.roles = await roles_1.RoleModel.find({});
+            return resultRole;
+        }
+        catch (error) {
+            const Error = (0, handleDbError_1.handleDbError)(error);
+            resultRole.error = Error;
+            return resultRole;
+        }
+    }
+    async updateRoleById(id, payload) {
+        const result = {};
+        try {
+            await roles_1.RoleModel.findOneAndUpdate({ _id: id }, payload);
+            result.role = { _id: id, ...payload };
+            return result;
+        }
+        catch (error) {
+            const Error = (0, handleDbError_1.handleDbError)(error);
+            result.error = Error;
+            return result;
+        }
+    }
+    async deleteRoleById(id) {
+        const result = {};
+        try {
+            await roles_1.RoleModel.findOneAndDelete({ _id: id });
+            return result;
+        }
+        catch (error) {
+            const Error = (0, handleDbError_1.handleDbError)(error);
+            result.error = Error;
+            return result;
+        }
+    }
+}
+exports.default = RoleStore;
+RoleStore.OPERATION_UNSUCCESSFUL = class extends Error {
+    constructor() {
+        super("An error occured while processing the request.");
+    }
+};

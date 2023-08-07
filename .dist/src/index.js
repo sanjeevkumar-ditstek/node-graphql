@@ -10,7 +10,10 @@ dotenv_1.default.config();
 const Port = process.env.PORT;
 const server = new server_1.Server(Number(Port));
 server.start();
-mongoose_1.default.Promise = Promise;
 mongoose_1.default.connect(process.env.MONGO_URL ? process.env.MONGO_URL : "");
-console.log('====mongodb connected!====');
-mongoose_1.default.connection.on('error', (error) => console.log(error));
+mongoose_1.default.connection.on('connected', function () {
+    console.log('Mongoose default connection open to ' + process.env.MONGO_URL);
+});
+mongoose_1.default.connection.on('error', function (err) {
+    console.log('Mongoose default connection error: ' + err);
+});

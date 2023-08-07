@@ -13,5 +13,6 @@ var ErrorMessageEnum;
     ErrorMessageEnum["REQUEST_PARAMS_ERROR"] = "Something Wrong In Req Params!";
     ErrorMessageEnum["USER_NOT_EXIST"] = "User not exists!";
     ErrorMessageEnum["INVALID_CREDENTIALS"] = "Invalid Credentials!";
+    ErrorMessageEnum["GRAPH_QL_ERROR"] = "This operation has been blocked as a potential Cross-Site Request Forgery (CSRF). Please either specify a 'content-type' header (with a type that is not one of application/x-www-form-urlencoded, multipart/form-data, text/plain) or provide a non-empty value for one of the following headers: x-apollo-operation-name, apollo-require-preflight";
 })(ErrorMessageEnum || (ErrorMessageEnum = {}));
 exports.default = ErrorMessageEnum;

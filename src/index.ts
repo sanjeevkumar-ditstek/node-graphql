@@ -6,7 +6,11 @@ const Port = process.env.PORT;
 const server = new Server(Number(Port));
 server.start();
 
-mongoose.Promise = Promise
 mongoose.connect(process.env.MONGO_URL? process.env.MONGO_URL : "")
-console.log('====mongodb connected!====');
-mongoose.connection.on('error', (error: Error) => console.log(error))
+mongoose.connection.on('connected', function () {  
+  console.log('Mongoose default connection open to ' + process.env.MONGO_URL);
+}); 
+
+mongoose.connection.on('error',function (err) {  
+  console.log('Mongoose default connection error: ' + err);
+});

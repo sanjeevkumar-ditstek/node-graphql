@@ -11,12 +11,12 @@ const common_1 = require("../../utils/interface/common");
 const apiResonse_1 = require("../../helper/apiResonse");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const dotenv_1 = __importDefault(require("dotenv"));
+// import dotenv from 'dotenv';
 const JoiValidate_1 = require("../../helper/JoiValidate");
 const schema_1 = require("../../utils/joiSchema/schema");
 const joiErrorHandler_1 = require("../../helper/joiErrorHandler");
 const apollo_server_express_1 = require("apollo-server-express");
-dotenv_1.default.config();
+// dotenv.config();
 class UserService {
     constructor(proxy) {
         this.userStore = new userStore_1.default();
@@ -42,7 +42,7 @@ class UserService {
                 return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), 'unknown');
                 // return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
             }
-            const { firstname, lastname, email, password, age } = value;
+            const { firstname, lastname, email, password, age, role } = value;
             // Check if email is already registered...
             let existingUser;
             try {
@@ -71,7 +71,7 @@ class UserService {
                     email: email.toLowerCase(),
                     password: hashPassword,
                     age,
-                    // role: roleRe_idsponse.data.
+                    role
                 };
                 result = await this.userStore.createUser(attributes);
                 if (result.error) {
@@ -91,6 +91,11 @@ class UserService {
                 data: null,
                 status: false
             };
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, { id: payload.id });
+            if (result.error) {
+                console.error(result.error);
+                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, {}, false, result.error);
+            }
             const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userCreateSchema, payload);
             if (error) {
                 console.error(error);
@@ -124,6 +129,11 @@ class UserService {
                 data: null,
                 status: false
             };
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, payload);
+            if (result.error) {
+                console.error(result.error);
+                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, {}, false, result.error);
+            }
             let existingUser;
             try {
                 existingUser = await this.userStore.getById(id);
@@ -161,6 +171,11 @@ class UserService {
         this.getUser = async (payload) => {
             let result;
             try {
+                const resultId = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, payload);
+                if (resultId.error) {
+                    console.error(resultId.error);
+                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, [], false, resultId.error);
+                }
                 result = await this.userStore.getById(payload.id);
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_FETCHED, result.user, true, null);
             }

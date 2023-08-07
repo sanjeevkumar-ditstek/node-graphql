@@ -2,7 +2,6 @@ import proxy from "../service/appServiceProxy";
 import { ApolloError } from "apollo-server-express";
 import STATUS_CODES from "../utils/enum/statusCodes";
 import * as IUserService from "../service/user/IUserService";
-import {readFile, multipleReadFile} from"../helper/fileReader";
 import { GraphQLUpload } from "graphql-upload";
 import authenticate from "../utils/auth/userAuth";
 
@@ -45,12 +44,12 @@ const userResolvers = {
   Mutation: {
     async registerUser(
       parent: any,
-      args: IUserService.IRegisterUserArgsPayload,
+      args: any,
       contextValue: any
     ) {
       // let user: any = authenticate(contextValue.token)
-      const payload: IUserService.IRegisterUserPayload = args.data;
-      // let response: IUserService.IRegisterUserResponse;
+      const payload: IUserService.IRegisterUserPayload = args.data ? args.data: contextValue.args.data;
+      let response: IUserService.IRegisterUserResponse;
       try {
         const response: IUserService.IRegisterUserResponse =
           await proxy.user.create(payload);

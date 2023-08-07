@@ -5,7 +5,6 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
-import routes from "../routes/index";
 import { ApolloServer  } from "@apollo/server";
 import { expressMiddleware ,  } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer  } from "@apollo/server/plugin/drainHttpServer";
@@ -21,7 +20,11 @@ import { extractBearerToken } from "../utils/auth/userAuth";
 import { ApolloError } from "apollo-server-express";
 import { JoiError } from "./joiErrorHandler";
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
-
+import { UserSchema } from "../schema/userSchema";
+import { ExecutionArgs, buildSchema , execute } from "graphql";
+import { useSofa  } from 'sofa-api';
+import { createSchema } from 'graphql-yoga'
+import ErrorMessageEnum from "../utils/enum/errorMessage";
 
 interface MyContext {
   token?: string;
@@ -54,7 +57,6 @@ export class Server {
     this.app.use(cookieParser());
     this.app.use(bodyParser.json());
     this.app.use(graphqlUploadExpress());
-    routes(this.app);
   }
 
   public addMiddleware(middleware: any): void {
@@ -74,7 +76,7 @@ export class Server {
       cache: 'bounded',
       plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
-        ApolloServerPluginLandingPageDisabled(),
+        // ApolloServerPluginLandingPageDisabled(),
         {
           async requestDidStart(initialRequestContext) {
             return {
@@ -99,7 +101,7 @@ export class Server {
         },
       ],
       formatError: (formattedError, error) => {
-        if(formattedError.message === "This operation has been blocked as a potential Cross-Site Request Forgery (CSRF). Please either specify a 'content-type' header (with a type that is not one of application/x-www-form-urlencoded, multipart/form-data, text/plain) or provide a non-empty value for one of the following headers: x-apollo-operation-name, apollo-require-preflight\n"){
+        if(formattedError.message === `${ErrorMessageEnum.GRAPH_QL_ERROR}\n`){
           return {message: formattedError.message, statusCode: 404 };
         }
         return formattedError;
@@ -111,12 +113,31 @@ export class Server {
       cors<cors.CorsRequest>(),
       json(),
       expressMiddleware(server, {
-        context: async ({ req }) => ({ token: extractBearerToken(req) }),
+        context: async ({ req }) => {
+          return { token: extractBearerToken(req) 
+          }},
       })
     );
 
+    this.app.use(
+      '/api',
+      useSofa({
+        basePath: '/api',
+        schema: createSchema({
+          typeDefs,
+          resolvers,
+        }),
+        async context({ req  }:any) {
+          return {
+            args: req.body,
+            token: null
+          };
+        },
+      })  
+    );
+
     await new Promise<void>((resolve) =>
-      httpServer.listen({ port: this.port }, resolve)
+      this.app.listen({ port: this.port }, resolve)
     );
     console.log(`🚀 Server ready at http://localhost:${this.port}`);
     console.log(
@@ -124,4 +145,3 @@ export class Server {
     );
   }
 }
- 

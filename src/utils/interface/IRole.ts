@@ -1,9 +1,9 @@
 export interface Role {
 	id?: string;
-	role: string;
+	name: string;
 }
 
 export interface UpdateRole {
 	id?: string;
-	role: string;
+	name: string;
 }

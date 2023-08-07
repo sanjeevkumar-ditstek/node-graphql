@@ -5,7 +5,7 @@ export interface User {
 	email: string;
 	password: string;
 	age: number;
-	// role: string;
+	role: string;
 }
 
 export interface UpdateUser {
@@ -15,5 +15,5 @@ export interface UpdateUser {
 	email?: string;
 	password?: string;
 	age?: number;
-	// role?: string;
+	role?: string;
 }

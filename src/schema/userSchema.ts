@@ -1,75 +1,75 @@
 import { gql } from "apollo-server-express"; //will create a schema
-const UserTypeDefs = gql`
-  scalar Upload
+export const UserSchema = `
+scalar Upload
 
-  type File {
-    filename: String!
-    mimetype: String!
-    encoding: String!
-  }
-  type SuccessMessage {
-    message: String
-  }
-
-  type User {
-    _id: String!,
-    firstname: String,
-    lastname: String,
-    email: String,
-    password: String,
-    age: Int,
-    #roles: [Role]
-  }
-
-  type Error {
-  message: String,
-  code: String,
+type File {
+  filename: String!
+  mimetype: String!
+  encoding: String!
 }
-  
-  type UserResponse{
-    user: User,
-    statusCode: Int,
-    message: String,
-    error: Error
-  }
-  type Login {
-    token: String!
-    user: User
-  }
+type SuccessMessage {
+  message: String
+}
 
-  type Query{ 
-    getAllUsers: [User],
-    getUser(id: String): User
-  }
+type User {
+  _id: String!,
+  firstname: String,
+  lastname: String,
+  email: String,
+  password: String,
+  age: Int,
+  roles: [Role]
+}
 
-  input UserProps {
-    firstname: String,
-    lastname: String,
-    email: String,
-    password: String,
-    age: Int,
-    #role: String,
-  }
+type Error {
+message: String,
+code: String,
+}
 
-  input UserUpdateProps {
-    firstname: String,
-    lastname: String,
-    email: String,
-    password: String,
-    age: Int,
-    #role: String,
-  }
+type UserResponse{
+  user: User,
+  statusCode: Int,
+  message: String,
+  error: Error
+}
+type Login {
+  token: String!
+  user: User
+}
 
-  type Mutation {
-    #the addPerson commmand will accept an argument of type String.
-    #it will return a 'Person' instance. 
-    registerUser(data: UserProps): User,
-    updateUser(id: String,data: UserUpdateProps): User
-    deleteUser(id: String): User
-    loginUser(email: String,password: String): Login
-    singleUpload(file: Upload!): SuccessMessage
-    multipleUpload(file: [Upload]!): SuccessMessage
-  }
-  `;
+type Query{ 
+  getAllUsers: [User],
+  getUser(id: String): User
+}
 
-export default UserTypeDefs;
+input UserProps {
+  firstname: String,
+  lastname: String,
+  email: String,
+  password: String,
+  age: Int,
+  role: String,
+}
+
+input UserUpdateProps {
+  firstname: String,
+  lastname: String,
+  email: String,
+  password: String,
+  age: Int,
+  role: String,
+}
+
+type Mutation {
+  #the addPerson commmand will accept an argument of type String.
+  #it will return a 'Person' instance. 
+  registerUser(data: UserProps): User,
+  updateUser(id: String,data: UserUpdateProps): User
+  deleteUser(id: String): User
+  loginUser(email: String,password: String): Login
+  singleUpload(file: Upload!): SuccessMessage
+  multipleUpload(file: [Upload]!): SuccessMessage
+}
+`
+
+export const UserTypeDefs = gql`${UserSchema}`;

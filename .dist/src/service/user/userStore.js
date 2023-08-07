@@ -10,7 +10,7 @@ class UserStore {
         const savedUser = {};
         try {
             const { firstname, lastname, email, password, age } = userInput;
-            savedUser.user = (await (await users_1.UserModel.create({ firstname, lastname, email, password, age })).populate('roles')).toJSON();
+            savedUser.user = (await users_1.UserModel.create({ firstname, lastname, email, password, age })).toJSON();
             return savedUser;
         }
         catch (error) {

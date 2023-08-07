@@ -1,4 +1,4 @@
-// import RoleTypeDefs from "./roleSchema";
-import UserTypeDefs from "./userSchema";
+import { RoleTypeDefs } from "./roleSchema";
+import { UserTypeDefs } from "./userSchema";
 
-export default [ UserTypeDefs];
+export default [UserTypeDefs , RoleTypeDefs];

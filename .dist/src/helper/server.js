@@ -11,18 +11,17 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const compression_1 = __importDefault(require("compression"));
 const cors_1 = __importDefault(require("cors"));
-const index_1 = __importDefault(require("../routes/index"));
 const server_1 = require("@apollo/server");
 const express4_1 = require("@apollo/server/express4");
 const drainHttpServer_1 = require("@apollo/server/plugin/drainHttpServer");
 const graphql_upload_1 = require("graphql-upload");
-// import { finished } from'stream/promises';
-// import { ApolloServerPluginLandingPageLocalDefault ,ApolloServerPluginLandingPageDisabled } from'apollo-server-core';
 const schema_1 = __importDefault(require("../schema"));
 const resolvers_1 = __importDefault(require("../resolvers"));
 const body_parser_2 = require("body-parser");
 const userAuth_1 = require("../utils/auth/userAuth");
-const disabled_1 = require("@apollo/server/plugin/disabled");
+const sofa_api_1 = require("sofa-api");
+const graphql_yoga_1 = require("graphql-yoga");
+const errorMessage_1 = __importDefault(require("../utils/enum/errorMessage"));
 dotenv_1.default.config();
 class Server {
     constructor(port) {
@@ -44,7 +43,6 @@ class Server {
         this.app.use((0, cookie_parser_1.default)());
         this.app.use(body_parser_1.default.json());
         this.app.use((0, graphql_upload_1.graphqlUploadExpress)());
-        (0, index_1.default)(this.app);
     }
     addMiddleware(middleware) {
         this.app.use(middleware);
@@ -61,7 +59,7 @@ class Server {
             cache: 'bounded',
             plugins: [
                 (0, drainHttpServer_1.ApolloServerPluginDrainHttpServer)({ httpServer }),
-                (0, disabled_1.ApolloServerPluginLandingPageDisabled)(),
+                // ApolloServerPluginLandingPageDisabled(),
                 {
                     async requestDidStart(initialRequestContext) {
                         return {
@@ -86,7 +84,7 @@ class Server {
                 },
             ],
             formatError: (formattedError, error) => {
-                if (formattedError.message === "This operation has been blocked as a potential Cross-Site Request Forgery (CSRF). Please either specify a 'content-type' header (with a type that is not one of application/x-www-form-urlencoded, multipart/form-data, text/plain) or provide a non-empty value for one of the following headers: x-apollo-operation-name, apollo-require-preflight\n") {
+                if (formattedError.message === `${errorMessage_1.default.GRAPH_QL_ERROR}\n`) {
                     return { message: formattedError.message, statusCode: 404 };
                 }
                 return formattedError;
@@ -94,9 +92,25 @@ class Server {
         });
         await server.start();
         this.app.use("/graphql", (0, cors_1.default)(), (0, body_parser_2.json)(), (0, express4_1.expressMiddleware)(server, {
-            context: async ({ req }) => ({ token: (0, userAuth_1.extractBearerToken)(req) }),
+            context: async ({ req }) => {
+                return { token: (0, userAuth_1.extractBearerToken)(req)
+                };
+            },
         }));
-        await new Promise((resolve) => httpServer.listen({ port: this.port }, resolve));
+        this.app.use('/api', (0, sofa_api_1.useSofa)({
+            basePath: '/api',
+            schema: (0, graphql_yoga_1.createSchema)({
+                typeDefs: schema_1.default,
+                resolvers: resolvers_1.default,
+            }),
+            async context({ req }) {
+                return {
+                    args: req.body,
+                    token: null
+                };
+            },
+        }));
+        await new Promise((resolve) => this.app.listen({ port: this.port }, resolve));
         console.log(`🚀 Server ready at http://localhost:${this.port}`);
         console.log(`🚀 Graphql Server ready at http://localhost:${this.port}/graphql`);
     }
