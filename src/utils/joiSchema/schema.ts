@@ -28,7 +28,7 @@ export const fileSchema = Joi.object({
 });
 
 export const roleSchema = Joi.object().keys({
-    role: Joi.string().required(),
+    name: Joi.string().required(),
 });
 
 export const getRoleSchema = Joi.object().keys({
