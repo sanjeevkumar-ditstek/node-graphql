@@ -8,13 +8,13 @@ export const  userCreateSchema = Joi.object().keys({
     role: Joi.string().required(),
 });
 
-export const  userUploadSchema = Joi.object().keys({
+export const  userUpdateSchema = Joi.object().keys({
     firstname: Joi.string(),
     lastname: Joi.string(),
     email: Joi.string().email(),
     password: Joi.string(),
     age: Joi.number(),
-    role: Joi.string().required(),
+    role: Joi.string(),
 });
 
 export const  getUserSchema = Joi.object().keys({

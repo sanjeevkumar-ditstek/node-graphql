@@ -8,7 +8,7 @@ const  UserSchema = new Schema({
     // auth_token: {type: String , default: null},
     // isLoggedIn: {type: String, default: null},
     // isSignup: {type: String, default: null},
-    // roles: [{ type: Schema.Types.ObjectId, ref: 'Role' , default: null}]
+    roles: { type: Schema.Types.ObjectId, ref: 'Role' , default: null}
 })
 
 export const UserModel = mongoose.model('User' , UserSchema)

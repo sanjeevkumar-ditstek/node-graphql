@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 const  RoleSchema = new Schema({
     name: {
         type: String,
-        // enum : ['ADMIN','USER','GUEST','SUPERADMIN'],
+        enum : ['ADMIN','USER','GUEST','SUPERADMIN'],
         required: true,
         default: "GUEST"
     }

@@ -28,7 +28,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const RoleSchema = new mongoose_1.Schema({
     name: {
         type: String,
-        // enum : ['ADMIN','USER','GUEST','SUPERADMIN'],
+        enum: ['ADMIN', 'USER', 'GUEST', 'SUPERADMIN'],
         required: true,
         default: "GUEST"
     }

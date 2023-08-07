@@ -33,23 +33,25 @@ class UserService {
                 statusCode: statusCodes_1.default.UNKNOWN_CODE,
                 status: false,
                 data: null,
-                message: ""
+                message: "",
             };
             const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userCreateSchema, payload);
             if (error) {
                 console.error(error);
                 const joiErr = (0, joiErrorHandler_1.JoiError)(error);
-                return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), 'unknown');
+                return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), "unknown");
                 // return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
             }
             const { firstname, lastname, email, password, age, role } = value;
             // Check if email is already registered...
             let existingUser;
             try {
-                existingUser = (await this.userStore.getByEmail(email));
+                existingUser = await this.userStore.getByEmail(email);
                 //Error if email id is already exist
                 if (existingUser && existingUser?.user?.email) {
-                    const Error = { message: errorMessage_1.default.EMAIL_ALREADY_EXIST };
+                    const Error = {
+                        message: errorMessage_1.default.EMAIL_ALREADY_EXIST,
+                    };
                     return (0, apiResonse_1.apiResponse)(statusCodes_1.default.BAD_REQUEST, errorMessage_1.default.EMAIL_ALREADY_EXIST, null, false, Error);
                 }
             }
@@ -57,11 +59,10 @@ class UserService {
                 console.error(e);
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, response, false, e);
             }
-            // let rolePayload: IRoleService.IgetRoleByNamePayload = { role };
-            // let roleResponse: IRoleService.IgetRoleByNameResponse = await this.proxy.role.getByName(rolePayload);
-            // if (roleResponse.statusCode !== STATUS_CODES.OK) {
-            // 	return roleResponse;
-            // }
+            const roleResponse = await this.proxy.role.getByName({ role });
+            if (roleResponse.statusCode !== statusCodes_1.default.OK) {
+                return roleResponse;
+            }
             let result;
             try {
                 const hashPassword = await bcrypt_1.default.hash(password, 10);
@@ -71,7 +72,7 @@ class UserService {
                     email: email.toLowerCase(),
                     password: hashPassword,
                     age,
-                    role
+                    role,
                 };
                 result = await this.userStore.createUser(attributes);
                 if (result.error) {
@@ -89,17 +90,23 @@ class UserService {
                 statusCode: statusCodes_1.default.UNKNOWN_CODE,
                 message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false
+                status: false,
             };
             const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, { id: payload.id });
             if (result.error) {
                 console.error(result.error);
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, {}, false, result.error);
             }
-            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userCreateSchema, payload);
+            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userUpdateSchema, payload.data);
             if (error) {
                 console.error(error);
                 return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, response, false, error);
+            }
+            if (payload.data.role) {
+                const roleResponse = await this.proxy.role.getByName({ role: payload.data.role });
+                if (roleResponse.statusCode !== statusCodes_1.default.OK) {
+                    return roleResponse;
+                }
             }
             let existingUser;
             try {
@@ -127,7 +134,7 @@ class UserService {
                 statusCode: statusCodes_1.default.UNKNOWN_CODE,
                 message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false
+                status: false,
             };
             const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, payload);
             if (result.error) {
@@ -157,7 +164,7 @@ class UserService {
                 statusCode: statusCodes_1.default.UNKNOWN_CODE,
                 message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false
+                status: false,
             };
             let result;
             try {
@@ -190,7 +197,7 @@ class UserService {
                 statusCode: statusCodes_1.default.UNKNOWN_CODE,
                 message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false
+                status: false,
             };
             let result;
             try {

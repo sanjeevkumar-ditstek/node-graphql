@@ -34,6 +34,6 @@ const UserSchema = new mongoose_1.Schema({
     // auth_token: {type: String , default: null},
     // isLoggedIn: {type: String, default: null},
     // isSignup: {type: String, default: null},
-    // roles: [{ type: Schema.Types.ObjectId, ref: 'Role' , default: null}]
+    roles: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Role', default: null }
 });
 exports.UserModel = mongoose_1.default.model('User', UserSchema);
