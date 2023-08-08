@@ -23,10 +23,8 @@ export default class UploadFileService
 
   public uploadMultipleFile = async ({ file }: any) => {
     // should return response
-    console.log(file.length , "file.length")
     const fileUrl = [];
     for (let i = 0; i < file.length; i++) {
-      console.log(file[i] , "file[i]....")
       const url: string | any = await fileReader(file[i]);
       fileUrl.push({ url });
     }
