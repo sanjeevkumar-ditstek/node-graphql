@@ -18,5 +18,6 @@ var ReponseMessageEnum;
     ReponseMessageEnum["USER_FETCHED"] = "User Fetched Successfully!";
     ReponseMessageEnum["ROLES_FETCHED"] = "All Roles Fetched Successfully!";
     ReponseMessageEnum["ROLE_FETCHED"] = "Role Fetched Successfully!";
+    ReponseMessageEnum["FILE_UPLOADED"] = "File Uploaded Successfully!";
 })(ReponseMessageEnum || (ReponseMessageEnum = {}));
 exports.default = ReponseMessageEnum;

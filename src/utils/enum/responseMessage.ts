@@ -14,7 +14,8 @@ enum ReponseMessageEnum {
 	USERS_FETCHED = "All Users Fetched Successfully!",
 	USER_FETCHED = "User Fetched Successfully!",
 	ROLES_FETCHED = "All Roles Fetched Successfully!",
-	ROLE_FETCHED = "Role Fetched Successfully!"
+	ROLE_FETCHED = "Role Fetched Successfully!",
+	FILE_UPLOADED = "File Uploaded Successfully!"
 }
 
 export default ReponseMessageEnum;

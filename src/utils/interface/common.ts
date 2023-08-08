@@ -3,10 +3,8 @@ import ErrorMessageEnum from "../enum/errorMessage";
 
 export interface IResponse {
 	error?: IError;
-	statusCode: StatusCodeEnum;
-	message: string;
 	data: any
-	status: boolean;
+	
 }
 
 export interface IError {
@@ -14,7 +12,7 @@ export interface IError {
 }
 
 export interface dbError{
-	message: string,
+	message?: string,
 	code?: string,
 }
 

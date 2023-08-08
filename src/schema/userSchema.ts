@@ -1,12 +1,5 @@
 import { gql } from "apollo-server-express"; //will create a schema
 export const UserSchema = `
-scalar Upload
-
-type File {
-  filename: String!
-  mimetype: String!
-  encoding: String!
-}
 type SuccessMessage {
   message: String
 }
@@ -18,7 +11,7 @@ type User {
   email: String,
   password: String,
   age: Int,
-  roles: [Role]
+  role: Role
 }
 
 type Error {
@@ -67,8 +60,6 @@ type Mutation {
   updateUser(id: String,data: UserUpdateProps): User
   deleteUser(id: String): User
   loginUser(email: String,password: String): Login
-  singleUpload(file: Upload!): SuccessMessage
-  multipleUpload(file: [Upload]!): SuccessMessage
 }
 `
 

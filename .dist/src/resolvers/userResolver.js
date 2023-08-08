@@ -14,40 +14,46 @@ const userResolvers = {
             try {
                 // const user: any = authenticate(contextValue.token)
                 const response = await appServiceProxy_1.default.user.getUsers();
+                if (response.error) {
+                    return new apollo_server_express_1.ApolloError(response.error?.message);
+                }
                 return response.data;
             }
             catch (e) {
-                return new apollo_server_express_1.ApolloError(JSON.stringify(e), "500");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
             }
         },
         getUser: async (_, args, contextValue) => {
             try {
                 // let user: any = authenticate(contextValue.token)
                 const response = await appServiceProxy_1.default.user.getUser(args);
+                if (response.error) {
+                    return new apollo_server_express_1.ApolloError(response.error?.message);
+                }
                 return response.data;
             }
             catch (e) {
-                return new apollo_server_express_1.ApolloError(JSON.stringify(e), "500");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
             }
         },
     },
     Mutation: {
         async registerUser(parent, args, contextValue) {
             // let user: any = authenticate(contextValue.token)
-            const payload = args.data ? args.data : contextValue.args.data;
+            const payload = args.data
+                ? args.data
+                : contextValue.args.data;
             let response;
             try {
                 const response = await appServiceProxy_1.default.user.create(payload);
-                if (!response) {
-                    // throw new ApolloError(
-                    //   response.error?.message,
-                    //   response.status.toString()
+                if (response.error) {
+                    return new apollo_server_express_1.ApolloError(response.error?.message);
                 }
                 return response.data;
             }
             catch (e) {
                 console.log(e);
-                return new apollo_server_express_1.ApolloError(JSON.stringify(e), "500");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
             }
         },
         updateUser: async (_, args, contextValue) => {
@@ -55,54 +61,41 @@ const userResolvers = {
                 // let user: any = authenticate(contextValue.token)
                 const payload = args.data;
                 const response = await appServiceProxy_1.default.user.updateUser({ id: args.id, data: payload });
-                if (response.statusCode !== statusCodes_1.default.OK) {
-                    throw new apollo_server_express_1.ApolloError(response.error?.message, response.status.toString());
+                if (response.error) {
+                    return new apollo_server_express_1.ApolloError(response.error?.message);
                 }
                 return response.data;
             }
             catch (e) {
-                return new apollo_server_express_1.ApolloError(JSON.stringify(e), "500");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
             }
         },
         deleteUser: async (_, args, contextValue) => {
             try {
                 // let user: any = authenticate(contextValue.token)
                 const payload = args;
-                const response = await await appServiceProxy_1.default.user.deleteUser(payload);
+                const response = await appServiceProxy_1.default.user.deleteUser(payload);
+                if (response.error) {
+                    return new apollo_server_express_1.ApolloError(response.error?.message);
+                }
                 return response.data;
             }
             catch (e) {
-                return new apollo_server_express_1.ApolloError(JSON.stringify(e), "500");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
             }
         },
         loginUser: async (_, args) => {
             try {
                 const payload = args;
                 const response = await appServiceProxy_1.default.user.loginUser(payload);
+                if (response.error) {
+                    return new apollo_server_express_1.ApolloError(response.error?.message);
+                }
                 return response.data;
             }
             catch (e) {
-                return new apollo_server_express_1.ApolloError(JSON.stringify(e), "500");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(e), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
             }
-        },
-        singleUpload: async (_, { file }) => {
-            const imageUrl = await appServiceProxy_1.default.uploadFile.uploadSingleFile(file);
-            // const singlefile = new SingleFile({image: imageUrl});
-            // await singlefile.save();
-            console.log({ image: imageUrl }, "{image: imageUrl}!!");
-            return {
-                message: "Single file uploaded successfully!",
-            };
-        },
-        multipleUpload: async (_, file) => {
-            const imageUrls = await appServiceProxy_1.default.uploadFile.uploadMultipleFile(await file);
-            // const multiplefile = new MultipleFile();
-            // multiplefile.images.push(...imageUrl);
-            // multiplefile.save();
-            console.log({ image: imageUrls }, "{image: imageUrls}");
-            return {
-                message: "Multiple File uploaded successfully!",
-            };
         },
     },
 };

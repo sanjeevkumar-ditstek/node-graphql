@@ -4,9 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const userStore_1 = __importDefault(require("./userStore"));
-const statusCodes_1 = __importDefault(require("../../utils/enum/statusCodes"));
 const errorMessage_1 = __importDefault(require("../../utils/enum/errorMessage"));
-const responseMessage_1 = __importDefault(require("../../utils/enum/responseMessage"));
 const common_1 = require("../../utils/interface/common");
 const apiResonse_1 = require("../../helper/apiResonse");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -30,17 +28,13 @@ class UserService {
         this.create = async (payload) => {
             // try{
             const response = {
-                statusCode: statusCodes_1.default.UNKNOWN_CODE,
-                status: false,
                 data: null,
-                message: "",
             };
             const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userCreateSchema, payload);
             if (error) {
                 console.error(error);
                 const joiErr = (0, joiErrorHandler_1.JoiError)(error);
                 return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), "unknown");
-                // return apiResponse(STATUS_CODES.UNPROCESSABLE_ENTITY, ErrorMessageEnum.REQUEST_PARAMS_ERROR, response, false, joiErr);
             }
             const { firstname, lastname, email, password, age, role } = value;
             // Check if email is already registered...
@@ -52,15 +46,15 @@ class UserService {
                     const Error = {
                         message: errorMessage_1.default.EMAIL_ALREADY_EXIST,
                     };
-                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.BAD_REQUEST, errorMessage_1.default.EMAIL_ALREADY_EXIST, null, false, Error);
+                    return (0, apiResonse_1.apiResponse)(null, Error);
                 }
             }
             catch (e) {
                 console.error(e);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, response, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
             const roleResponse = await this.proxy.role.getByName({ role });
-            if (roleResponse.statusCode !== statusCodes_1.default.OK) {
+            if (roleResponse.error) {
                 return roleResponse;
             }
             let result;
@@ -77,34 +71,31 @@ class UserService {
                 result = await this.userStore.createUser(attributes);
                 if (result.error) {
                     console.log(result.error, "error");
-                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, result.error);
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
                 }
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_CREATED, result.user, true, null);
+                return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
         };
         this.updateUser = async (payload) => {
             const response = {
-                statusCode: statusCodes_1.default.UNKNOWN_CODE,
-                message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false,
             };
             const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, { id: payload.id });
             if (result.error) {
                 console.error(result.error);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, {}, false, result.error);
+                return (0, apiResonse_1.apiResponse)({}, result.error);
             }
             const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userUpdateSchema, payload.data);
             if (error) {
                 console.error(error);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, response, false, error);
+                return (0, apiResonse_1.apiResponse)(null, error);
             }
             if (payload.data.role) {
                 const roleResponse = await this.proxy.role.getByName({ role: payload.data.role });
-                if (roleResponse.statusCode !== statusCodes_1.default.OK) {
+                if (roleResponse.error) {
                     return roleResponse;
                 }
             }
@@ -112,67 +103,61 @@ class UserService {
             try {
                 existingUser = await this.userStore.getById(payload.id);
                 if (!existingUser) {
-                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.BAD_REQUEST, errorMessage_1.default.USER_NOT_EXIST, null, false, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
+                    return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
                 }
             }
             catch (e) {
                 console.error(e);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
             try {
                 const result = await this.userStore.updateUserById(payload.id, payload.data);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_UPDATED, result.user, true, null);
+                return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
                 console.error(e);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
         };
         this.deleteUser = async (payload) => {
             const { id } = payload;
             const response = {
-                statusCode: statusCodes_1.default.UNKNOWN_CODE,
-                message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false,
             };
             const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, payload);
             if (result.error) {
                 console.error(result.error);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, {}, false, result.error);
+                return (0, apiResonse_1.apiResponse)({}, result.error);
             }
             let existingUser;
             try {
                 existingUser = await this.userStore.getById(id);
                 if (!existingUser) {
-                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.BAD_REQUEST, errorMessage_1.default.USER_NOT_EXIST, null, false, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
+                    return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
                 }
             }
             catch (e) {
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
             try {
                 const result = await this.userStore.deleteUserById(id);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_DELETED, result.user, true, null);
+                return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
         };
         this.getUsers = async () => {
             const response = {
-                statusCode: statusCodes_1.default.UNKNOWN_CODE,
-                message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false,
             };
             let result;
             try {
                 result = await this.userStore.getAll();
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USERS_FETCHED, result.users, true, null);
+                return (0, apiResonse_1.apiResponse)(result.users, null);
             }
             catch (e) {
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
         };
         this.getUser = async (payload) => {
@@ -181,44 +166,39 @@ class UserService {
                 const resultId = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, payload);
                 if (resultId.error) {
                     console.error(resultId.error);
-                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.UNPROCESSABLE_ENTITY, errorMessage_1.default.REQUEST_PARAMS_ERROR, [], false, resultId.error);
+                    return (0, apiResonse_1.apiResponse)([], resultId.error);
                 }
                 result = await this.userStore.getById(payload.id);
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_FETCHED, result.user, true, null);
+                return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
         };
         // loginUser
         this.loginUser = async (payload) => {
             const { email, password } = payload;
             const response = {
-                statusCode: statusCodes_1.default.UNKNOWN_CODE,
-                message: responseMessage_1.default.INVALID_EMAIL_OR_CODE,
                 data: null,
-                status: false,
             };
             let result;
             try {
                 result = await this.userStore.getByEmail(payload.email);
                 if (!result) {
-                    return (0, apiResonse_1.apiResponse)(statusCodes_1.default.BAD_REQUEST, errorMessage_1.default.USER_NOT_EXIST, null, false, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
+                    return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
                 }
                 const isValid = await bcrypt_1.default.compare(password, result?.user ? result?.user?.password : "");
                 if (!isValid || !result.user?.password) {
                     const errorMsg = errorMessage_1.default.INVALID_CREDENTIALS;
-                    response.statusCode = statusCodes_1.default.UNAUTHORIZED;
                     response.error = (0, common_1.toError)(errorMsg);
                     return response;
                 }
-                response.statusCode = statusCodes_1.default.OK;
                 response.token = this.generateJWT(result.user);
                 response.user = result.user;
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.OK, responseMessage_1.default.USER_FETCHED, response, true, null);
+                return (0, apiResonse_1.apiResponse)(response, null);
             }
             catch (e) {
-                return (0, apiResonse_1.apiResponse)(statusCodes_1.default.INTERNAL_SERVER_ERROR, errorMessage_1.default.INTERNAL_ERROR, null, false, e);
+                return (0, apiResonse_1.apiResponse)(null, e);
             }
         };
         this.proxy = proxy;

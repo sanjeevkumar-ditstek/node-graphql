@@ -1,73 +1,76 @@
-import { Role as IROLE, UpdateRole as IUPDATEROLE } from "../../utils/interface/IRole";
+import {
+  Role as IROLE,
+  UpdateRole as IUPDATEROLE,
+} from "../../utils/interface/IRole";
 import { IResponse, dbError } from "../../utils/interface/common";
 import { Request } from "express";
 
 export interface IRoleServiceAPI {
-	create(payload: ICreateRolePayload): any;
-	getRoles(): any;
-	getRole(payload: IGetRolePayload): any;
-	deleteRole(request: IDeleteRolePayload): any;
-	updateRole(payload: IUpdateRolePayload): any;
-	getByName(paylaod: IgetRoleByNamePayload): any
+  create(payload: ICreateRolePayload): any;
+  getRoles(): any;
+  getRole(payload: IGetRolePayload): any;
+  deleteRole(request: IDeleteRolePayload): any;
+  updateRole(payload: IUpdateRolePayload): any;
+  getByName(paylaod: IgetRoleByNamePayload): any;
 }
 
 export interface ICreateRolePayload {
-	name: string;
+  name: string;
 }
 export interface ICreateRoleResponse extends IResponse {
-	role?: IROLE;
+  role?: IROLE;
 }
 
 export interface IgetRoleByNamePayload {
-	role: string;
+  role: string;
 }
 export interface IgetRoleByNameResponse extends IResponse {
-	role?: IROLE;
+  role?: IROLE;
 }
 
 export interface IUpdateRolePayload {
-	id: string,
-	data: IUPDATEROLE
+  id: string;
+  data: IUPDATEROLE;
 }
 
 export interface IUpdateRoleResponse extends IResponse {
-	role?: IUPDATEROLE;
+  role?: IUPDATEROLE;
 }
 
 export interface IGetRoleRequest extends Request {
-	params: {
-		id: string;
-	}
+  params: {
+    id: string;
+  };
 }
 export interface IGetRoleResponse extends IResponse {
-	role?: IROLE;
+  role?: IROLE;
 }
 
 // export interface IGetAllRoleRequest extends Request {
 // }
 export interface IGetAllRoleResponse extends IResponse {
-	roles?: IROLE[];
+  roles?: IROLE[];
 }
 export interface IGetRolePayload {
-	id: string;
+  id: string;
 }
 export interface IRoleResponse extends IResponse {
-	roles?: IROLE;
+  roles?: IROLE;
 }
 
 export interface IDeleteRolePayload extends Request {
-	id: string
+  id: string;
 }
 export interface IDeleteRoleResponse extends IResponse {
-	role?: IROLE;
+  role?: IROLE;
 }
 
 export interface IRoleDbResponse {
-	role?: IROLE | null
-	error?: dbError;
+  role?: IROLE | null;
+  error?: dbError;
 }
 
 export interface IGetRoleListDbResponse {
-	roles?: IROLE[] | null
-	error?: dbError;
+  roles?: IROLE[] | null;
+  error?: dbError;
 }

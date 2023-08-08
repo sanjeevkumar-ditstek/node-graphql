@@ -3,13 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserTypeDefs = exports.UserSchema = void 0;
 const apollo_server_express_1 = require("apollo-server-express"); //will create a schema
 exports.UserSchema = `
-scalar Upload
-
-type File {
-  filename: String!
-  mimetype: String!
-  encoding: String!
-}
 type SuccessMessage {
   message: String
 }
@@ -21,7 +14,7 @@ type User {
   email: String,
   password: String,
   age: Int,
-  roles: [Role]
+  role: Role
 }
 
 type Error {
@@ -70,8 +63,6 @@ type Mutation {
   updateUser(id: String,data: UserUpdateProps): User
   deleteUser(id: String): User
   loginUser(email: String,password: String): Login
-  singleUpload(file: Upload!): SuccessMessage
-  multipleUpload(file: [Upload]!): SuccessMessage
 }
 `;
 exports.UserTypeDefs = (0, apollo_server_express_1.gql) `${exports.UserSchema}`;

@@ -4,26 +4,33 @@ import STATUS_CODES from "../utils/enum/statusCodes";
 import * as IUserService from "../service/user/IUserService";
 import { GraphQLUpload } from "graphql-upload";
 import authenticate from "../utils/auth/userAuth";
+import ErrorMessageEnum from "../utils/enum/errorMessage";
 
 type UpdateUserPayload = {
-  id?: string,
-  firstname?: string,
-  lastname?: string,
-  email?: string, 
-  password?: string
-}
+  id?: string;
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  password?: string;
+};
 
 const userResolvers = {
   Upload: GraphQLUpload,
   Query: {
     getAllUsers: async (_: any, contextValue: any) => {
-      try {        
+      try {
         // const user: any = authenticate(contextValue.token)
         const response: IUserService.IGetAllUserResponse =
           await proxy.user.getUsers();
+        if (response.error) {
+          return new ApolloError(response.error?.message);
+        }
         return response.data;
       } catch (e) {
-        return new ApolloError(JSON.stringify(e), "500");
+        return new ApolloError(
+          JSON.stringify(e),
+          STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+        );
       }
     },
     getUser: async (
@@ -35,33 +42,38 @@ const userResolvers = {
         // let user: any = authenticate(contextValue.token)
         const response: IUserService.IGetUserResponse =
           await proxy.user.getUser(args);
+        if (response.error) {
+          return new ApolloError(response.error?.message);
+        }
         return response.data;
       } catch (e) {
-        return new ApolloError(JSON.stringify(e), "500");
+        return new ApolloError(
+          JSON.stringify(e),
+          STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+        );
       }
     },
   },
   Mutation: {
-    async registerUser(
-      parent: any,
-      args: any,
-      contextValue: any
-    ) {
+    async registerUser(parent: any, args: any, contextValue: any) {
       // let user: any = authenticate(contextValue.token)
-      const payload: IUserService.IRegisterUserPayload = args.data ? args.data: contextValue.args.data;
+      const payload: IUserService.IRegisterUserPayload = args.data
+        ? args.data
+        : contextValue.args.data;
       let response: IUserService.IRegisterUserResponse;
       try {
         const response: IUserService.IRegisterUserResponse =
           await proxy.user.create(payload);
-        if (!response) {
-          // throw new ApolloError(
-          //   response.error?.message,
-          //   response.status.toString()
+        if (response.error) {
+          return new ApolloError(response.error?.message);
         }
         return response.data;
       } catch (e) {
         console.log(e);
-        return new ApolloError(JSON.stringify(e), "500");
+        return new ApolloError(
+          JSON.stringify(e),
+          STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+        );
       }
     },
     updateUser: async (
@@ -74,15 +86,15 @@ const userResolvers = {
         const payload: UpdateUserPayload = args.data;
         const response: IUserService.IUpdateUserResponse =
           await proxy.user.updateUser({ id: args.id, data: payload });
-        if (response.statusCode !== STATUS_CODES.OK) {
-          throw new ApolloError(
-            response.error?.message,
-            response.status.toString()
-          );
+        if (response.error) {
+          return new ApolloError(response.error?.message);
         }
         return response.data;
       } catch (e) {
-        return new ApolloError(JSON.stringify(e), "500");
+        return new ApolloError(
+          JSON.stringify(e),
+          STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+        );
       }
     },
     deleteUser: async (
@@ -94,10 +106,16 @@ const userResolvers = {
         // let user: any = authenticate(contextValue.token)
         const payload: IUserService.IDeleteUserPayload = args;
         const response: IUserService.IDeleteUserResponse =
-          await await proxy.user.deleteUser(payload);
+          await proxy.user.deleteUser(payload);
+        if (response.error) {
+          return new ApolloError(response.error?.message);
+        }
         return response.data;
       } catch (e) {
-        return new ApolloError(JSON.stringify(e), "500");
+        return new ApolloError(
+          JSON.stringify(e),
+          STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+        );
       }
     },
     loginUser: async (_: any, args: any) => {
@@ -105,34 +123,18 @@ const userResolvers = {
         const payload: IUserService.ILoginPayload = args;
         const response: IUserService.ILoginResponse =
           await proxy.user.loginUser(payload);
+        if (response.error) {
+          return new ApolloError(response.error?.message);
+        }
         return response.data;
       } catch (e) {
-        return new ApolloError(JSON.stringify(e), "500");
+        return new ApolloError(
+          JSON.stringify(e),
+          STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+        );
       }
-    },
-    singleUpload: async (_: any, { file }: any) => {
-      const imageUrl = await proxy.uploadFile.uploadSingleFile(file);
-      // const singlefile = new SingleFile({image: imageUrl});
-      // await singlefile.save();
-
-
-      console.log({image: imageUrl} , "{image: imageUrl}!!")
-      return {
-        message: "Single file uploaded successfully!",
-      };
-    },
-    multipleUpload: async (_: any,  file : any) => {
-      const imageUrls = await proxy.uploadFile.uploadMultipleFile(await file);
-      // const multiplefile = new MultipleFile();
-      // multiplefile.images.push(...imageUrl);
-      // multiplefile.save();
-      console.log({image: imageUrls} , "{image: imageUrls}")
-      return {
-        message: "Multiple File uploaded successfully!",
-      };
     },
   },
 };
 
 export default userResolvers;
-

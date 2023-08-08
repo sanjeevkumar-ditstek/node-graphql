@@ -1,13 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.apiResponse = void 0;
-const apiResponse = (statusCode, message, data, status, error) => {
+const apiResponse = (data, error) => {
     return {
-        status,
         error,
-        statusCode,
-        message,
-        data
+        data,
     };
 };
 exports.apiResponse = apiResponse;

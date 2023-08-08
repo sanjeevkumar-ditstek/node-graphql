@@ -17,7 +17,7 @@ export interface IRegisterUserPayload {
 	email: string;
 	password: string;
 	age: number;
-	// role: string;
+	role: string;
 }
 export interface IRegisterUserArgsPayload {
 	data: {firstname: string;
@@ -25,7 +25,7 @@ export interface IRegisterUserArgsPayload {
 	email: string;
 	password: string;
 	age: number;
-	// role: string;
+	role: string;
 	}
 }
 
