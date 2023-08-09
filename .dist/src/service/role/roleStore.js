@@ -9,11 +9,11 @@ class RoleStore {
     async createRole(roleInput) {
         const savedRole = {};
         try {
-            const { name } = roleInput;
-            savedRole.role = await roles_1.RoleModel.create({ name });
+            savedRole.role = (await roles_1.RoleModel.create(roleInput)).toJSON();
             return savedRole;
         }
         catch (error) {
+            console.log(error);
             const Error = (0, handleDbError_1.handleDbError)(error);
             savedRole.error = Error;
             return savedRole;

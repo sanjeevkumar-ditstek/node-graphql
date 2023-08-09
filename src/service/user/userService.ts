@@ -6,7 +6,7 @@ import responseMessage from "../../utils/enum/responseMessage";
 import * as IRoleService from "../role/IRoleService";
 import * as IUserService from "./IUserService";
 import { IAppServiceProxy } from "../appServiceProxy";
-import { dbError, toError } from "../../utils/interface/common";
+import { IResponse, dbError, toError } from "../../utils/interface/common";
 import { apiResponse } from "../../helper/apiResonse";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -14,6 +14,7 @@ import bcrypt from "bcrypt";
 import { JoiValidate } from "../../helper/JoiValidate";
 import {
   getUserSchema,
+  loginSchema,
   userCreateSchema,
   userUpdateSchema,
 } from "../../utils/joiSchema/schema";
@@ -36,11 +37,10 @@ export default class UserService implements IUserService.IUserServiceAPI {
     return jwt.sign(payLoad, "process.env.JWT_SECRET");
   };
 
-  public create = async (payload: IUserService.IRegisterUserPayload) => {
+  public create = async (
+    payload: IUserService.IRegisterUserPayload
+  ): Promise<IResponse | any> => {
     // try{
-    const response: IUserService.IRegisterUserResponse = {
-      data: null,
-    };
     const { error, value } = JoiValidate(userCreateSchema, payload);
     if (error) {
       console.error(error);
@@ -57,20 +57,14 @@ export default class UserService implements IUserService.IUserServiceAPI {
         const Error: dbError = {
           message: ErrorMessageEnum.EMAIL_ALREADY_EXIST,
         };
-        return apiResponse(
-          null,
-          Error
-        );
+        return apiResponse(null, Error);
       }
     } catch (e) {
       console.error(e);
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
     const roleResponse: IRoleService.IgetRoleByNameResponse =
-      await this.proxy.role.getByName({ role });
+      await this.proxy.role.getByName({ name: role });
     if (roleResponse.error) {
       return roleResponse;
     }
@@ -84,195 +78,149 @@ export default class UserService implements IUserService.IUserServiceAPI {
         email: email.toLowerCase(),
         password: hashPassword,
         age,
-        role,
+        role: roleResponse.data?._id ? roleResponse.data?._id : "",
       };
       result = await this.userStore.createUser(attributes);
 
       if (result.error) {
-        console.log(result.error, "error");
-        return apiResponse(
-          null,
-          result.error
-        );
+        console.log(result.error);
+        return apiResponse(null, result.error);
       }
-      return apiResponse(
-        result.user,
-        null
-      );
+      return apiResponse(result.user, null);
     } catch (e) {
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
   };
 
-  public updateUser = async (payload: IUserService.IUpdateUserPayload) => {
-    const response: IUserService.IUpdateUserResponse = {
-      data: null,
-    };
-
-    const result = JoiValidate(getUserSchema, { id: payload.id });
+  public updateUser = async (
+    payload: IUserService.IUpdateUserPayload
+  ): Promise<IResponse | any> => {
+    const { id, data } = payload;
+    const result = JoiValidate(getUserSchema, { id });
     if (result.error) {
       console.error(result.error);
-      return apiResponse(
-        {},
-        result.error
-      );
+      return apiResponse({}, result.error);
     }
-
-    const { error, value } = JoiValidate(userUpdateSchema, payload.data);
+    const { error, value } = JoiValidate(userUpdateSchema, { ...data });
     if (error) {
       console.error(error);
-      return apiResponse(
-        null,
-        error
-      );
+      return apiResponse(null, error);
     }
-
-    if (payload.data.role) {
+    if (data.role) {
       const roleResponse: IRoleService.IgetRoleByNameResponse =
-        await this.proxy.role.getByName({ role: payload.data.role });
+        await this.proxy.role.getByName({ name: data.role });
       if (roleResponse.error) {
         return roleResponse;
       }
     }
-
     let existingUser: IUserService.IUserDbResponse;
     try {
-      existingUser = await this.userStore.getById(payload.id);
-      if (!existingUser) {
-        return apiResponse(
-          null,
-          toError(ErrorMessageEnum.USER_NOT_EXIST)
-        );
+      existingUser = await this.userStore.getById(id);
+      if (existingUser.error) {
+        return apiResponse(null, existingUser.error);
       }
-    } catch (e) {
-      console.error(e);
-      return apiResponse(
-        null,
-        e
-      );
-    }
-    try {
+      if (!existingUser.user) {
+        return apiResponse(null, toError(ErrorMessageEnum.USER_NOT_EXIST));
+      }
       const result = await this.userStore.updateUserById(
         payload.id,
         payload.data
       );
-      return apiResponse(
-        result.user,
-        null
-      );
+      if (result.error) {
+        return apiResponse(null, result.error);
+      }
+      return apiResponse(result.user, null);
     } catch (e) {
       console.error(e);
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
   };
 
-  public deleteUser = async (payload: IUserService.IDeleteUserPayload) => {
+  public deleteUser = async (
+    payload: IUserService.IDeleteUserPayload
+  ): Promise<IResponse | any> => {
     const { id } = payload;
-    const response: IUserService.IDeleteUserResponse = {
-      data: null,
-    };
-
     const result = JoiValidate(getUserSchema, payload);
     if (result.error) {
       console.error(result.error);
-      return apiResponse(
-        {},
-        result.error
-      );
+      return apiResponse({}, result.error);
     }
-
     let existingUser: IUserService.IUserDbResponse;
     try {
       existingUser = await this.userStore.getById(id);
-      if (!existingUser) {
-        return apiResponse(
-          null,
-          toError(ErrorMessageEnum.USER_NOT_EXIST)
-        );
+      if(existingUser.error){
+        return apiResponse(null, existingUser.error);
       }
-    } catch (e) {
-      return apiResponse(
-        null,
-        e
-      );
-    }
-    try {
+      if (!existingUser.user) {
+        return apiResponse(null, toError(ErrorMessageEnum.USER_NOT_EXIST));
+      }
       const result = await this.userStore.deleteUserById(id);
-      return apiResponse(
-        result.user,
-        null
-      );
+      if (result.error) {
+        return apiResponse(null, result.error);
+      }
+      return apiResponse(result.user, null);
+
     } catch (e) {
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
   };
 
-  public getUsers = async () => {
-    const response: IUserService.IGetAllUserResponse = {
-      data: null,
-    };
+  public getUsers = async (): Promise<IResponse | any> => {
     let result: IUserService.IGetUserListDbResponse;
     try {
       result = await this.userStore.getAll();
-      return apiResponse(
-        result.users,
-        null
-      );
+      if (result.error) {
+        return apiResponse(null, result.error);
+      }
+      return apiResponse(result.users, null);
     } catch (e) {
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
   };
 
-  public getUser = async (payload: IUserService.IGetUserPayload) => {
+  public getUser = async (
+    payload: IUserService.IGetUserPayload
+  ): Promise<IResponse | any> => {
     let result: IUserService.IUserDbResponse;
     try {
       const resultId = JoiValidate(getUserSchema, payload);
       if (resultId.error) {
         console.error(resultId.error);
-        return apiResponse(
-          [],
-          resultId.error
-        );
+        return apiResponse([], resultId.error);
       }
       result = await this.userStore.getById(payload.id);
-      return apiResponse(
-        result.user,
-        null
-      );
+      if (result.error) {
+        return apiResponse(null, result.error);
+      }
+      if (!result.user) {
+        const error = new Error()
+        error.message = ErrorMessageEnum.USER_NOT_EXIST
+        return apiResponse(null, error);
+      }
+      return apiResponse(result.user, null);
     } catch (e) {
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
   };
 
   // loginUser
-  public loginUser = async (payload: IUserService.ILoginPayload) => {
+  public loginUser = async (
+    payload: IUserService.ILoginPayload
+  ): Promise<IResponse | any> => {
     const { email, password } = payload;
-    const response: IUserService.ILoginResponse = {
-      data: null,
-    };
+    const { error, value } = JoiValidate(loginSchema, { email , password });
+    if (error) {
+      console.error(error);
+      return apiResponse(null, error);
+    }
     let result: IUserService.IUserDbResponse;
     try {
-      result = await this.userStore.getByEmail(payload.email);
+      result = await this.userStore.getByEmail(email);
+      if (result.error) {
+        return apiResponse(null, result.error);
+      }
       if (!result) {
-        return apiResponse(
-          null,
-          toError(ErrorMessageEnum.USER_NOT_EXIST)
-        );
+        return apiResponse(null, toError(ErrorMessageEnum.USER_NOT_EXIST));
       }
       const isValid = await bcrypt.compare(
         password,
@@ -280,22 +228,12 @@ export default class UserService implements IUserService.IUserServiceAPI {
       );
       if (!isValid || !result.user?.password) {
         const errorMsg = ErrorMessageEnum.INVALID_CREDENTIALS;
-      
-        response.error = toError(errorMsg);
-        return response;
+        return apiResponse(null,  toError(errorMsg))
       }
-      
-      response.token = this.generateJWT(result.user);
-      response.user = result.user;
-      return apiResponse(
-        response,
-        null
-      );
+      const token: string = this.generateJWT(result.user);
+      return apiResponse({token , id: result.user.id}, null);
     } catch (e) {
-      return apiResponse(
-        null,
-        e
-      );
+      return apiResponse(null, e);
     }
   };
 

@@ -5,6 +5,8 @@ import { IAppServiceProxy } from "../appServiceProxy";
 // import dotenv from 'dotenv';
 // dotenv.config();
 import { fileReader } from "../../helper/fileReader";
+import ErrorMessageEnum from "../../utils/enum/errorMessage";
+import ReponseMessageEnum from "../../utils/enum/responseMessage";
 
 export default class UploadFileService
   implements IUploadFileService.IUploadFileServiceAPI
@@ -15,19 +17,24 @@ export default class UploadFileService
     this.proxy = proxy;
   }
 
-  public uploadSingleFile = async (file: any) => {
+  public uploadSingleFile = async (file: any) : Promise<IUploadFileService.IFileUploadResponse>=> {
     //should return response
-    const url: string | any = await fileReader(file);
-    return url;
+    const response: IUploadFileService.IFileUploadResponse = await fileReader(file);
+    return response;
   };
 
-  public uploadMultipleFile = async ({ file }: any) => {
+  public uploadMultipleFile = async ({ file }: any): Promise<IUploadFileService.IFileUploadResponse> => {
     // should return response
-    const fileUrl = [];
+    const response: IUploadFileService.IFileUploadResponse = {
+      message: ErrorMessageEnum.FILE_INTERNAL_ERROR
+    };
     for (let i = 0; i < file.length; i++) {
-      const url: string | any = await fileReader(file[i]);
-      fileUrl.push({ url });
+      const response = await fileReader(file[i]);
+      if(response.error){
+        return response;
+      }
     }
-    return fileUrl;
+    response.message = ReponseMessageEnum.FILES_UPLOADED;
+    return response;
   };
 }

@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const joi_1 = __importDefault(require("joi"));
 const roleStore_1 = __importDefault(require("./roleStore"));
 const errorMessage_1 = __importDefault(require("../../utils/enum/errorMessage"));
 const common_1 = require("../../utils/interface/common");
@@ -18,34 +17,24 @@ class RoleService {
     constructor(proxy) {
         this.roleStore = new roleStore_1.default();
         this.create = async (payload) => {
-            const response = {
-                data: null,
-            };
-            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.roleSchema, payload);
+            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.roleSchema, payload.data);
             if (error) {
                 console.error(error);
                 const joiErr = (0, joiErrorHandler_1.JoiError)(error);
                 return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), "unknown");
             }
-            const { name } = payload;
+            const { name } = payload.data;
             let existingRole;
             try {
                 existingRole = await this.roleStore.getByName(name);
                 if (existingRole.error) {
                     return (0, apiResonse_1.apiResponse)(null, existingRole.error);
                 }
-                if (existingRole && existingRole?.role?.name === name) {
+                if (existingRole && existingRole?.role?.name) {
                     const Error = { message: errorMessage_1.default.ROLE_ALREADY_EXIST };
                     return (0, apiResonse_1.apiResponse)(null, Error);
                 }
-            }
-            catch (e) {
-                console.error(e);
-                return (0, apiResonse_1.apiResponse)({}, e);
-            }
-            let resultRole;
-            try {
-                resultRole = await this.roleStore.createRole({ name });
+                const resultRole = await this.roleStore.createRole(value);
                 if (resultRole.error) {
                     return (0, apiResonse_1.apiResponse)({}, resultRole.error);
                 }
@@ -53,16 +42,16 @@ class RoleService {
             }
             catch (e) {
                 console.error(e);
-                return (0, apiResonse_1.apiResponse)(null, e);
+                return (0, apiResonse_1.apiResponse)({}, e);
             }
         };
         this.getRoles = async () => {
-            const response = {
-                data: null,
-            };
             let rolesResult;
             try {
                 rolesResult = await this.roleStore.getAll();
+                if (rolesResult.error) {
+                    return (0, apiResonse_1.apiResponse)(null, rolesResult.error);
+                }
                 return (0, apiResonse_1.apiResponse)(rolesResult.roles, null);
             }
             catch (e) {
@@ -70,17 +59,23 @@ class RoleService {
             }
         };
         this.getRole = async (payload) => {
-            const response = {
-                data: null,
-            };
-            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleSchema, { id: payload.id });
+            const { id } = payload;
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleSchema, { id });
             if (result.error) {
                 console.error(result.error);
                 return (0, apiResonse_1.apiResponse)({}, result.error);
             }
             let resultRole;
             try {
-                resultRole = await this.roleStore.getById(payload.id);
+                resultRole = await this.roleStore.getById(id);
+                if (resultRole.error) {
+                    return (0, apiResonse_1.apiResponse)(null, resultRole.error);
+                }
+                if (!resultRole.role) {
+                    const error = new Error();
+                    error.message = errorMessage_1.default.ROLE_NOT_EXIST;
+                    return (0, apiResonse_1.apiResponse)(null, error);
+                }
                 return (0, apiResonse_1.apiResponse)(resultRole.role, null);
             }
             catch (e) {
@@ -88,60 +83,52 @@ class RoleService {
             }
         };
         this.getByName = async (payload) => {
-            const response = {
-                data: null,
-            };
-            const schema = joi_1.default.object().keys({
-                name: joi_1.default.string().required(),
-            });
-            const params = schema.validate(payload);
-            if (params.error) {
-                console.error(params.error);
-                return (0, apiResonse_1.apiResponse)(response, params.error);
-            }
-            const { role } = payload;
-            // Check if email is already registered
-            let existingRole;
-            try {
-                existingRole = await this.roleStore.getByName(role);
-                //Error if email id is already exist
-                if (!existingRole) {
-                    return (0, apiResonse_1.apiResponse)([], (0, common_1.toError)(errorMessage_1.default.ROLE_NOT_EXIST));
-                }
-            }
-            catch (e) {
-                console.error(e);
-                return (0, apiResonse_1.apiResponse)(response, e);
-            }
-            return (0, apiResonse_1.apiResponse)(existingRole, null);
-        };
-        this.updateRole = async (payload) => {
-            const response = {
-                data: null,
-            };
-            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleSchema, { id: payload.id });
+            const { name } = payload;
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleByNameSchema, { name });
             if (result.error) {
                 console.error(result.error);
                 return (0, apiResonse_1.apiResponse)({}, result.error);
             }
-            const updateSchemaResult = (0, JoiValidate_1.JoiValidate)(schema_1.roleSchema, { id: payload.id });
-            if (updateSchemaResult.error) {
-                console.error(updateSchemaResult.error);
-                return (0, apiResonse_1.apiResponse)({}, updateSchemaResult.error);
-            }
+            // Check if email is already registered
             let existingRole;
             try {
-                existingRole = await this.roleStore.getById(payload.id);
+                existingRole = await this.roleStore.getByName(name);
+                //Error if email id is already exist
                 if (!existingRole) {
-                    return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.ROLE_NOT_EXIST));
+                    return (0, apiResonse_1.apiResponse)([], (0, common_1.toError)(errorMessage_1.default.ROLE_NOT_EXIST));
+                }
+                if (existingRole.error) {
+                    return (0, apiResonse_1.apiResponse)(null, existingRole.error);
                 }
             }
             catch (e) {
                 console.error(e);
                 return (0, apiResonse_1.apiResponse)(null, e);
             }
+            return (0, apiResonse_1.apiResponse)(existingRole.role, null);
+        };
+        this.updateRole = async (payload) => {
+            const { id, data } = payload;
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleSchema, { id });
+            if (result.error) {
+                console.error(result.error);
+                return (0, apiResonse_1.apiResponse)({}, result.error);
+            }
+            const updateSchemaResult = (0, JoiValidate_1.JoiValidate)(schema_1.roleSchema, { ...data });
+            if (updateSchemaResult.error) {
+                console.error(updateSchemaResult.error);
+                return (0, apiResonse_1.apiResponse)({}, updateSchemaResult.error);
+            }
+            let existingRole;
             try {
-                const result = await this.roleStore.updateRoleById(payload.id, payload.data);
+                existingRole = await this.roleStore.getById(id);
+                if (!existingRole) {
+                    return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.ROLE_NOT_EXIST));
+                }
+                const result = await this.roleStore.updateRoleById(id, data);
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
                 return (0, apiResonse_1.apiResponse)(result.role, null);
             }
             catch (e) {
@@ -151,10 +138,7 @@ class RoleService {
         };
         this.deleteRole = async (payload) => {
             const { id } = payload;
-            const response = {
-                data: null,
-            };
-            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleSchema, { id: payload.id });
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getRoleSchema, { id });
             if (result.error) {
                 console.error(result.error);
                 return (0, apiResonse_1.apiResponse)({}, result.error);
@@ -165,12 +149,13 @@ class RoleService {
                 if (!existingRole) {
                     return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.ROLE_NOT_EXIST));
                 }
-            }
-            catch (e) {
-                return (0, apiResonse_1.apiResponse)(null, e);
-            }
-            try {
+                if (existingRole.error) {
+                    return (0, apiResonse_1.apiResponse)(null, existingRole.error);
+                }
                 const result = await this.roleStore.deleteRoleById(id);
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
                 return (0, apiResonse_1.apiResponse)(result.role, null);
             }
             catch (e) {

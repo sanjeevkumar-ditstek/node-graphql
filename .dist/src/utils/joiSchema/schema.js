@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRoleSchema = exports.roleSchema = exports.fileSchema = exports.getUserSchema = exports.userUpdateSchema = exports.userCreateSchema = void 0;
+exports.loginSchema = exports.getRoleByNameSchema = exports.getRoleSchema = exports.roleSchema = exports.fileSchema = exports.getUserSchema = exports.userUpdateSchema = exports.userCreateSchema = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.userCreateSchema = joi_1.default.object().keys({
     firstname: joi_1.default.string().required(),
@@ -34,4 +34,11 @@ exports.roleSchema = joi_1.default.object().keys({
 });
 exports.getRoleSchema = joi_1.default.object().keys({
     id: joi_1.default.string().required(),
+});
+exports.getRoleByNameSchema = joi_1.default.object().keys({
+    name: joi_1.default.string().required(),
+});
+exports.loginSchema = joi_1.default.object().keys({
+    email: joi_1.default.string().required(),
+    password: joi_1.default.string().required(),
 });

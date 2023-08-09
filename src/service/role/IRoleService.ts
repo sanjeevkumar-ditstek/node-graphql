@@ -6,23 +6,23 @@ import { IResponse, dbError } from "../../utils/interface/common";
 import { Request } from "express";
 
 export interface IRoleServiceAPI {
-  create(payload: ICreateRolePayload): any;
-  getRoles(): any;
-  getRole(payload: IGetRolePayload): any;
-  deleteRole(request: IDeleteRolePayload): any;
-  updateRole(payload: IUpdateRolePayload): any;
-  getByName(paylaod: IgetRoleByNamePayload): any;
+  create(payload: ICreateRolePayload): Promise<IResponse | any>;
+  getRoles(): Promise<IResponse | any>;
+  getRole(payload: IGetRolePayload): Promise<IResponse | any>;
+  deleteRole(request: IDeleteRolePayload): Promise<IResponse | any>;
+  updateRole(payload: IUpdateRolePayload): Promise<IResponse | any>;
+  getByName(paylaod: IgetRoleByNamePayload): Promise<IResponse | any>;
 }
 
 export interface ICreateRolePayload {
-  name: string;
+  data: IROLE
 }
 export interface ICreateRoleResponse extends IResponse {
   role?: IROLE;
 }
 
 export interface IgetRoleByNamePayload {
-  role: string;
+  name: string;
 }
 export interface IgetRoleByNameResponse extends IResponse {
   role?: IROLE;

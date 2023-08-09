@@ -3,6 +3,8 @@ import { UserModel } from "../../db/users";
 import * as IUserService from "./IUserService";
 import { handleDbError } from "../../helper/handleDbError";
 import { dbError } from "../../utils/interface/common";
+import { Console } from "winston/lib/winston/transports";
+import mongoose from "mongoose";
 
 export default class UserStore {
 	public static OPERATION_UNSUCCESSFUL = class extends Error {
@@ -18,8 +20,8 @@ export default class UserStore {
 	public async createUser(userInput: IUSER): Promise<IUserService.IUserDbResponse> {
 		const savedUser: IUserService.IUserDbResponse = {}
 		try {
-			const { firstname, lastname, email, password, age } = userInput;
-			savedUser.user =   (await UserModel.create({ firstname, lastname, email, password, age })).toJSON()
+			const { firstname, lastname, email, password, age , role } = userInput;
+			savedUser.user =   (await ((await UserModel.create({ firstname, lastname, email, password, age, role })).populate('role'))).toJSON()
 			return savedUser;
 		} catch (error:any) {
 			const Error: dbError =	 handleDbError(error);
@@ -80,7 +82,8 @@ export default class UserStore {
 	public async updateUserById(id: string, payload: any): Promise<IUserService.IUserDbResponse> {
 		const result: IUserService.IUserDbResponse = {}
 		try {
-			await UserModel.findOneAndUpdate({_id: id} , payload)
+			const { id, data} = payload;
+			await UserModel.findOneAndUpdate({_id: id} , ...data)
 			result.user = { id , ...payload}
 			return result;
 		} catch (error:any) {

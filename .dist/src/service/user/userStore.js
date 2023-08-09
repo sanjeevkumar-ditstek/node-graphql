@@ -9,8 +9,8 @@ class UserStore {
     async createUser(userInput) {
         const savedUser = {};
         try {
-            const { firstname, lastname, email, password, age } = userInput;
-            savedUser.user = (await users_1.UserModel.create({ firstname, lastname, email, password, age })).toJSON();
+            const { firstname, lastname, email, password, age, role } = userInput;
+            savedUser.user = (await ((await users_1.UserModel.create({ firstname, lastname, email, password, age, role })).populate('role'))).toJSON();
             return savedUser;
         }
         catch (error) {
@@ -71,7 +71,8 @@ class UserStore {
     async updateUserById(id, payload) {
         const result = {};
         try {
-            await users_1.UserModel.findOneAndUpdate({ _id: id }, payload);
+            const { id, data } = payload;
+            await users_1.UserModel.findOneAndUpdate({ _id: id }, ...data);
             result.user = { id, ...payload };
             return result;
         }

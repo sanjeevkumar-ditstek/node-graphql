@@ -27,9 +27,6 @@ class UserService {
         };
         this.create = async (payload) => {
             // try{
-            const response = {
-                data: null,
-            };
             const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userCreateSchema, payload);
             if (error) {
                 console.error(error);
@@ -53,7 +50,7 @@ class UserService {
                 console.error(e);
                 return (0, apiResonse_1.apiResponse)(null, e);
             }
-            const roleResponse = await this.proxy.role.getByName({ role });
+            const roleResponse = await this.proxy.role.getByName({ name: role });
             if (roleResponse.error) {
                 return roleResponse;
             }
@@ -66,11 +63,11 @@ class UserService {
                     email: email.toLowerCase(),
                     password: hashPassword,
                     age,
-                    role,
+                    role: roleResponse.data?._id ? roleResponse.data?._id : "",
                 };
                 result = await this.userStore.createUser(attributes);
                 if (result.error) {
-                    console.log(result.error, "error");
+                    console.log(result.error);
                     return (0, apiResonse_1.apiResponse)(null, result.error);
                 }
                 return (0, apiResonse_1.apiResponse)(result.user, null);
@@ -80,38 +77,36 @@ class UserService {
             }
         };
         this.updateUser = async (payload) => {
-            const response = {
-                data: null,
-            };
-            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, { id: payload.id });
+            const { id, data } = payload;
+            const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, { id });
             if (result.error) {
                 console.error(result.error);
                 return (0, apiResonse_1.apiResponse)({}, result.error);
             }
-            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userUpdateSchema, payload.data);
+            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.userUpdateSchema, { ...data });
             if (error) {
                 console.error(error);
                 return (0, apiResonse_1.apiResponse)(null, error);
             }
-            if (payload.data.role) {
-                const roleResponse = await this.proxy.role.getByName({ role: payload.data.role });
+            if (data.role) {
+                const roleResponse = await this.proxy.role.getByName({ name: data.role });
                 if (roleResponse.error) {
                     return roleResponse;
                 }
             }
             let existingUser;
             try {
-                existingUser = await this.userStore.getById(payload.id);
-                if (!existingUser) {
+                existingUser = await this.userStore.getById(id);
+                if (existingUser.error) {
+                    return (0, apiResonse_1.apiResponse)(null, existingUser.error);
+                }
+                if (!existingUser.user) {
                     return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
                 }
-            }
-            catch (e) {
-                console.error(e);
-                return (0, apiResonse_1.apiResponse)(null, e);
-            }
-            try {
                 const result = await this.userStore.updateUserById(payload.id, payload.data);
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
                 return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
@@ -121,9 +116,6 @@ class UserService {
         };
         this.deleteUser = async (payload) => {
             const { id } = payload;
-            const response = {
-                data: null,
-            };
             const result = (0, JoiValidate_1.JoiValidate)(schema_1.getUserSchema, payload);
             if (result.error) {
                 console.error(result.error);
@@ -132,15 +124,16 @@ class UserService {
             let existingUser;
             try {
                 existingUser = await this.userStore.getById(id);
-                if (!existingUser) {
+                if (existingUser.error) {
+                    return (0, apiResonse_1.apiResponse)(null, existingUser.error);
+                }
+                if (!existingUser.user) {
                     return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
                 }
-            }
-            catch (e) {
-                return (0, apiResonse_1.apiResponse)(null, e);
-            }
-            try {
                 const result = await this.userStore.deleteUserById(id);
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
                 return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
@@ -148,12 +141,12 @@ class UserService {
             }
         };
         this.getUsers = async () => {
-            const response = {
-                data: null,
-            };
             let result;
             try {
                 result = await this.userStore.getAll();
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
                 return (0, apiResonse_1.apiResponse)(result.users, null);
             }
             catch (e) {
@@ -169,6 +162,14 @@ class UserService {
                     return (0, apiResonse_1.apiResponse)([], resultId.error);
                 }
                 result = await this.userStore.getById(payload.id);
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
+                if (!result.user) {
+                    const error = new Error();
+                    error.message = errorMessage_1.default.USER_NOT_EXIST;
+                    return (0, apiResonse_1.apiResponse)(null, error);
+                }
                 return (0, apiResonse_1.apiResponse)(result.user, null);
             }
             catch (e) {
@@ -178,24 +179,27 @@ class UserService {
         // loginUser
         this.loginUser = async (payload) => {
             const { email, password } = payload;
-            const response = {
-                data: null,
-            };
+            const { error, value } = (0, JoiValidate_1.JoiValidate)(schema_1.loginSchema, { email, password });
+            if (error) {
+                console.error(error);
+                return (0, apiResonse_1.apiResponse)(null, error);
+            }
             let result;
             try {
-                result = await this.userStore.getByEmail(payload.email);
+                result = await this.userStore.getByEmail(email);
+                if (result.error) {
+                    return (0, apiResonse_1.apiResponse)(null, result.error);
+                }
                 if (!result) {
                     return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMessage_1.default.USER_NOT_EXIST));
                 }
                 const isValid = await bcrypt_1.default.compare(password, result?.user ? result?.user?.password : "");
                 if (!isValid || !result.user?.password) {
                     const errorMsg = errorMessage_1.default.INVALID_CREDENTIALS;
-                    response.error = (0, common_1.toError)(errorMsg);
-                    return response;
+                    return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMsg));
                 }
-                response.token = this.generateJWT(result.user);
-                response.user = result.user;
-                return (0, apiResonse_1.apiResponse)(response, null);
+                const token = this.generateJWT(result.user);
+                return (0, apiResonse_1.apiResponse)({ token, id: result.user.id }, null);
             }
             catch (e) {
                 return (0, apiResonse_1.apiResponse)(null, e);

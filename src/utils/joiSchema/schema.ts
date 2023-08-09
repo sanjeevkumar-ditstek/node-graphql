@@ -35,3 +35,11 @@ export const getRoleSchema = Joi.object().keys({
     id: Joi.string().required(),
 })
 
+export const getRoleByNameSchema = Joi.object().keys({
+    name: Joi.string().required(),
+  });
+
+export const loginSchema = Joi.object().keys({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+});

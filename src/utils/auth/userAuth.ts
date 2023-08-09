@@ -9,7 +9,7 @@ export const extractBearerToken = (req: any): string | undefined => {
     return token;
     }
     catch(e){
-        console.log(e , "EEEEEEE....")
+        console.log(e)
     }
 };
 
@@ -22,6 +22,6 @@ export default function authenticate(token: string): any {
         }
     }
     catch(e){
-        console.log(e , "EEEEi authineticate")
+        console.log(e)
     }
 }

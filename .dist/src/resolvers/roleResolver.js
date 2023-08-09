@@ -22,6 +22,10 @@ const roleResolvers = {
             try {
                 //   let user: any = authenticate(contextValue.token)
                 const response = await appServiceProxy_1.default.role.getRole(args);
+                if (response.error) {
+                    console.log(response.error, "role sdlkdnks");
+                    return new apollo_server_express_1.ApolloError(JSON.stringify(response.error), statusCodes_1.default.INTERNAL_SERVER_ERROR.toString());
+                }
                 return response.data;
             }
             catch (e) {
@@ -33,8 +37,7 @@ const roleResolvers = {
         async createRole(parent, args, contextValue) {
             try {
                 // let user: any = authenticate(contextValue.token)
-                const payload = args.data;
-                const response = await appServiceProxy_1.default.role.create(payload);
+                const response = await appServiceProxy_1.default.role.create(args);
                 if (response.error) {
                     return new apollo_server_express_1.ApolloError(response.error?.message);
                 }
@@ -47,7 +50,7 @@ const roleResolvers = {
         updateRole: async (_, args, contextValue) => {
             try {
                 //   let user: any = authenticate(contextValue.token)
-                const payload = args.data;
+                const payload = args;
                 const { id, data } = payload;
                 const response = await appServiceProxy_1.default.role.updateRole({ id, data });
                 if (response.error) {
@@ -61,8 +64,7 @@ const roleResolvers = {
         },
         deleteRole: async (_, args, contextValue) => {
             try {
-                const payload = args;
-                const response = await appServiceProxy_1.default.role.deleteRole(payload);
+                const response = await appServiceProxy_1.default.role.deleteRole(args);
                 if (response.error) {
                     return new apollo_server_express_1.ApolloError(response.error?.message);
                 }

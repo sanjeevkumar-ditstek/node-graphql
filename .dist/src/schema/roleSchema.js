@@ -14,11 +14,11 @@ exports.RoleSchema = `
   }
 
   input RoleProps {
-    role: String,
+    name: String!,
   }
 
   input RoleUpdateProps {
-    role: String,
+    name: String!,
   }
 
   type Mutation {

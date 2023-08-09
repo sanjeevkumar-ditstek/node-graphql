@@ -14,7 +14,7 @@ const extractBearerToken = (req) => {
         return token;
     }
     catch (e) {
-        console.log(e, "EEEEEEE....");
+        console.log(e);
     }
 };
 exports.extractBearerToken = extractBearerToken;
@@ -27,7 +27,7 @@ function authenticate(token) {
         }
     }
     catch (e) {
-        console.log(e, "EEEEi authineticate");
+        console.log(e);
     }
 }
 exports.default = authenticate;

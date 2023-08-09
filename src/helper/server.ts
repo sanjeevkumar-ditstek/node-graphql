@@ -25,6 +25,7 @@ import { ExecutionArgs, buildSchema , execute } from "graphql";
 import { useSofa  } from 'sofa-api';
 import { createSchema } from 'graphql-yoga'
 import ErrorMessageEnum from "../utils/enum/errorMessage";
+import STATUS_CODES from "../utils/enum/statusCodes";
 
 interface MyContext {
   token?: string;
@@ -82,15 +83,15 @@ export class Server {
             return {
               async willSendResponse(requestContext: any) {
                 const { response, errors } = requestContext;
-               response.http.status = 400;
                 if (errors) {
+                  response.http.status = STATUS_CODES.BAD_REQUEST;
                   const resError: any = [];
                   errors.forEach((error: any) => {
                     resError.push({
                       message: error.message,
                       code: error.extensions
                         ? error.extensions.code
-                        : "INTERNAL_SERVER_ERROR",
+                        : ErrorMessageEnum.INTERNAL_ERROR,
                     });
                   });
                   response.body.singleResult.errors = resError;
@@ -102,7 +103,7 @@ export class Server {
       ],
       formatError: (formattedError, error) => {
         if(formattedError.message === `${ErrorMessageEnum.GRAPH_QL_ERROR}\n`){
-          return {message: formattedError.message, statusCode: 404 };
+          return {message: formattedError.message, statusCode: STATUS_CODES.NOT_FOUND };
         }
         return formattedError;
       },

@@ -65,8 +65,10 @@ class Server {
                         return {
                             async willSendResponse(requestContext) {
                                 const { response, errors } = requestContext;
-                                response.http.status = 400;
+                                //  response.http.status = 400;
+                                console.log(errors, "sdafs");
                                 if (errors) {
+                                    response.http.status = 400;
                                     const resError = [];
                                     errors.forEach((error) => {
                                         resError.push({

@@ -16,10 +16,10 @@ export default class RoleStore {
 	public async createRole(roleInput: IROLE): Promise<IRoleService.IRoleDbResponse> {
 		const savedRole: IRoleService.IRoleDbResponse = {}
 		try {
-			const { name } = roleInput;
-			savedRole.role   =   await RoleModel.create({ name })
+			savedRole.role = (await RoleModel.create(roleInput)).toJSON()
 			return savedRole;
 		} catch (error:any) {
+			console.log(error)
 			const Error: dbError =	 handleDbError(error);
 			savedRole.error = Error
 			return savedRole
