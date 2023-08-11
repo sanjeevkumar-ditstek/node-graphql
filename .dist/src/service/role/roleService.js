@@ -21,7 +21,7 @@ class RoleService {
             if (error) {
                 console.error(error);
                 const joiErr = (0, joiErrorHandler_1.JoiError)(error);
-                return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), "unknown");
+                return new apollo_server_express_1.ApolloError(JSON.stringify(joiErr), errorMessage_1.default.UNKNOWN);
             }
             const { name } = payload.data;
             let existingRole;

@@ -19,11 +19,21 @@ class UserService {
     constructor(proxy) {
         this.userStore = new userStore_1.default();
         this.generateJWT = (user) => {
-            const payLoad = {
-                id: user.id,
-                email: user.email,
+            const jwtResponse = {
+                token: null
             };
-            return jsonwebtoken_1.default.sign(payLoad, "process.env.JWT_SECRET");
+            try {
+                const payLoad = {
+                    id: user._id,
+                    email: user.email
+                };
+                jwtResponse.token = jsonwebtoken_1.default.sign(payLoad, "process.env.JWT_SECRET");
+                return jwtResponse;
+            }
+            catch (e) {
+                jwtResponse.error = JSON.stringify(e);
+                return jwtResponse;
+            }
         };
         this.create = async (payload) => {
             // try{
@@ -198,8 +208,8 @@ class UserService {
                     const errorMsg = errorMessage_1.default.INVALID_CREDENTIALS;
                     return (0, apiResonse_1.apiResponse)(null, (0, common_1.toError)(errorMsg));
                 }
-                const token = this.generateJWT(result.user);
-                return (0, apiResonse_1.apiResponse)({ token, id: result.user.id }, null);
+                const JwtResponse = this.generateJWT(result.user);
+                return (0, apiResonse_1.apiResponse)({ token: JwtResponse.token, id: result.user._id }, null);
             }
             catch (e) {
                 return (0, apiResonse_1.apiResponse)(null, e);

@@ -19,15 +19,23 @@ const extractBearerToken = (req) => {
 };
 exports.extractBearerToken = extractBearerToken;
 function authenticate(token) {
+    const response = {
+        data: undefined,
+        error: undefined,
+    };
     try {
         const data = jsonwebtoken_1.default.verify(token, "process.env.JWT_SECRET");
         if (data) {
-            const user = data;
-            return user;
+            response.data = data;
         }
+        else {
+            response.error = "something is wrong jwt not returned any data.";
+        }
+        return response;
     }
     catch (e) {
-        console.log(e);
+        response.error = JSON.stringify(e);
+        return response;
     }
 }
 exports.default = authenticate;

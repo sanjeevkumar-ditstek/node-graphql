@@ -75,7 +75,7 @@ export interface IGetUserResponse extends IResponse {
   users?: IUSER;
 }
 
-export interface IDeleteUserPayload extends Request {
+export interface IDeleteUserPayload {
   id: string;
 }
 export interface IDeleteUserResponse extends IResponse {
@@ -113,5 +113,10 @@ export interface IGetUserListDbResponse {
 
 export interface IUpdateUserDbResponse {
   user?: IUPDATEUSER | null;
+  error?: dbError;
+}
+
+export interface IUserDeleteDbResponse {
+  user?: {_id: string};
   error?: dbError;
 }

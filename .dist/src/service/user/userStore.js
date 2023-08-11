@@ -89,7 +89,7 @@ class UserStore {
         const result = {};
         try {
             await users_1.UserModel.findOneAndDelete({ _id: id });
-            result.user = { id };
+            result.user = { _id: id };
             return result;
         }
         catch (error) {

@@ -5,6 +5,9 @@ import * as IUserService from "../service/user/IUserService";
 import { GraphQLUpload } from "graphql-upload";
 import authenticate from "../utils/auth/userAuth";
 import ErrorMessageEnum from "../utils/enum/errorMessage";
+import { ContextValidation } from "../helper/contextValidation";
+import { CtxValidation } from "../utils/interface/contextValidation";
+import { AuthResponse } from "../utils/interface/common";
 
 type UpdateUserPayload = {
   id?: string;
@@ -17,9 +20,15 @@ type UpdateUserPayload = {
 const userResolvers = {
   Upload: GraphQLUpload,
   Query: {
-    getAllUsers: async (_: any, contextValue: any) => {
+    getAllUsers: async (_: any, args: any, contextValue: any) => {
       try {
-        // const user: any = authenticate(contextValue.token)
+        const authResposne: AuthResponse = authenticate(contextValue.token);
+        if (authResposne.error) {
+          return new ApolloError(
+            authResposne.error,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+          );
+        }
         const response: IUserService.IGetAllUserResponse =
           await proxy.user.getUsers();
         if (response.error) {
@@ -39,7 +48,13 @@ const userResolvers = {
       contextValue: any
     ) => {
       try {
-        // let user: any = authenticate(contextValue.token)
+        const authResposne: AuthResponse = authenticate(contextValue.token);
+        if (authResposne.error) {
+          return new ApolloError(
+            authResposne.error,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+          );
+        }
         const response: IUserService.IGetUserResponse =
           await proxy.user.getUser(args);
         if (response.error) {
@@ -55,15 +70,25 @@ const userResolvers = {
     },
   },
   Mutation: {
-    async registerUser(parent: any, args: any, contextValue: any) {
+    async registerUser(
+      parent: any,
+      args: IUserService.IRegisterUserArgsPayload,
+      contextValue: any
+    ) {
       // let user: any = authenticate(contextValue.token)
-      const payload: IUserService.IRegisterUserPayload = args.data
-        ? args.data
-        : contextValue.args.data;
-      let response: IUserService.IRegisterUserResponse;
       try {
+        const ctxResponse: CtxValidation = ContextValidation(
+          args,
+          contextValue,
+          false,
+          true
+        );
+        if (!ctxResponse.success && ctxResponse.error) {
+          return ctxResponse.error;
+        }
+        const { data } = ctxResponse.args.data;
         const response: IUserService.IRegisterUserResponse =
-          await proxy.user.create(payload);
+          await proxy.user.create(data);
         if (response.error) {
           return new ApolloError(response.error?.message);
         }
@@ -82,10 +107,25 @@ const userResolvers = {
       contextValue: any
     ) => {
       try {
-        // let user: any = authenticate(contextValue.token)
-        const payload: UpdateUserPayload = args.data;
+        const authResposne: AuthResponse = authenticate(contextValue.token);
+        if (authResposne.error) {
+          return new ApolloError(
+            authResposne.error,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+          );
+        }
+        const ctxResponse: CtxValidation = ContextValidation(
+          args,
+          contextValue,
+          true,
+          true
+        );
+        if (!ctxResponse.success && ctxResponse.error) {
+          return ctxResponse.error;
+        }
+        const { data, id } = ctxResponse.args;
         const response: IUserService.IUpdateUserResponse =
-          await proxy.user.updateUser({ id: args.id, data: payload });
+          await proxy.user.updateUser({ id, data });
         if (response.error) {
           return new ApolloError(response.error?.message);
         }
@@ -103,10 +143,24 @@ const userResolvers = {
       contextValue: any
     ) => {
       try {
-        // let user: any = authenticate(contextValue.token)
-        const payload: IUserService.IDeleteUserPayload = args;
+        const authResposne: AuthResponse = authenticate(contextValue.token);
+        if (authResposne.error) {
+          return new ApolloError(
+            authResposne.error,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+          );
+        }
+        const ctxResponse: CtxValidation = ContextValidation(
+          args,
+          contextValue,
+          true
+        );
+        if (!ctxResponse.success && ctxResponse.error) {
+          return ctxResponse.error;
+        }
+        const { id } = ctxResponse.args;
         const response: IUserService.IDeleteUserResponse =
-          await proxy.user.deleteUser(payload);
+          await proxy.user.deleteUser({ id });
         if (response.error) {
           return new ApolloError(response.error?.message);
         }
@@ -118,11 +172,20 @@ const userResolvers = {
         );
       }
     },
-    loginUser: async (_: any, args: any) => {
+    loginUser: async (_: any, args: any, contextValue: any) => {
       try {
-        const payload: IUserService.ILoginPayload = args;
+        const ctxResponse: CtxValidation = ContextValidation(
+          args,
+          contextValue,
+          false,
+          true
+        );
+        if (!ctxResponse.success && ctxResponse.error) {
+          return ctxResponse.error;
+        }
+        const { email, password } = ctxResponse.args.data;
         const response: IUserService.ILoginResponse =
-          await proxy.user.loginUser(payload);
+          await proxy.user.loginUser({ email, password });
         if (response.error) {
           return new ApolloError(response.error?.message);
         }

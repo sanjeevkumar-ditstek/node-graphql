@@ -96,11 +96,11 @@ export default class UserStore {
 	/**
 	 * Delete User By Id
 	 */
-	public async deleteUserById(id: string): Promise<IUserService.IUpdateUserDbResponse> {
-		const result: IUserService.IUpdateUserDbResponse = {}
+	public async deleteUserById(id: string): Promise<IUserService.IUserDeleteDbResponse> {
+		const result: IUserService.IUserDeleteDbResponse = {}
 		try {
 			await UserModel.findOneAndDelete({ _id: id });
-			result.user = {id}
+			result.user = { _id: id}
 			return result;
 		} catch (error:any) {
 			const Error: dbError = handleDbError(error);

@@ -12,7 +12,10 @@ enum ErrorMessageEnum {
 	USER_NOT_EXIST = "User not exists!",
 	INVALID_CREDENTIALS = "Invalid Credentials!",
 	UNKNOWN = "unknown",
-	GRAPH_QL_ERROR = "This operation has been blocked as a potential Cross-Site Request Forgery (CSRF). Please either specify a 'content-type' header (with a type that is not one of application/x-www-form-urlencoded, multipart/form-data, text/plain) or provide a non-empty value for one of the following headers: x-apollo-operation-name, apollo-require-preflight"
+	GRAPH_QL_ERROR = "This operation has been blocked as a potential Cross-Site Request Forgery (CSRF). Please either specify a 'content-type' header (with a type that is not one of application/x-www-form-urlencoded, multipart/form-data, text/plain) or provide a non-empty value for one of the following headers: x-apollo-operation-name, apollo-require-preflight",
+	GRAPH_QL_CONTEXT_ARGS_ERROR = "For Rest apis context args not provided!",
+	GRAPH_QL__ARGS_ERROR = "For GraphhQl apis args not provided!",
+	BODY_IS_NOT_PROVIDED = "Body not provided for rest api!",
 }
 
 export default ErrorMessageEnum;

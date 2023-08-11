@@ -58,7 +58,7 @@ export interface IRoleResponse extends IResponse {
   roles?: IROLE;
 }
 
-export interface IDeleteRolePayload extends Request {
+export interface IDeleteRolePayload {
   id: string;
 }
 export interface IDeleteRoleResponse extends IResponse {

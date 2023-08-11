@@ -129,9 +129,15 @@ export class Server {
           resolvers,
         }),
         async context({ req  }:any) {
+          if(!req.body){
+            return new ApolloError(
+              ErrorMessageEnum.BODY_IS_NOT_PROVIDED,
+              STATUS_CODES.BAD_REQUEST.toString()
+            );
+          }
           return {
             args: req.body,
-            token: null
+            token: req?.headers?.authorization ? req?.headers?.authorization : null
           };
         },
       })  

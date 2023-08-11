@@ -5,12 +5,20 @@ import * as IUserService from "../service/user/IUserService";
 import { GraphQLUpload } from "graphql-upload";
 import authenticate from "../utils/auth/userAuth";
 import * as IUploadFileService from "../service/fileUpload/IUploadFileService";
+import { AuthResponse } from "../utils/interface/common";
 
 const fileUploadResolvers = {
   Upload: GraphQLUpload,
   Mutation: {
-    singleUpload: async (_: any, { file }: any) => {
+    singleUpload: async (_: any, { file }: any, contextValue: any) => {
       try {
+        const authResposne: AuthResponse = authenticate(contextValue.token);
+        if (authResposne.error) {
+          return new ApolloError(
+            authResposne.error,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+          );
+        }
         const response: IUploadFileService.IFileUploadResponse =
           await proxy.uploadFile.uploadSingleFile(file);
         if (response.error) {
@@ -27,8 +35,15 @@ const fileUploadResolvers = {
         );
       }
     },
-    multipleUpload: async (_: any, file: any) => {
+    multipleUpload: async (_: any, file: any, contextValue: any) => {
       try {
+        const authResposne: AuthResponse = authenticate(contextValue.token);
+        if (authResposne.error) {
+          return new ApolloError(
+            authResposne.error,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.toString()
+          );
+        }
         const response: IUploadFileService.IFileUploadResponse =
           await proxy.uploadFile.uploadMultipleFile(await file);
         if (response.error) {

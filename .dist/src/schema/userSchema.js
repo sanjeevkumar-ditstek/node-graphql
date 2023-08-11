@@ -56,13 +56,18 @@ input UserUpdateProps {
   role: String,
 }
 
+input UserLoginProps {
+  email: String,
+  password: String,
+}
+
 type Mutation {
   #the addPerson commmand will accept an argument of type String.
   #it will return a 'Person' instance. 
   registerUser(data: UserProps): User,
   updateUser(id: String,data: UserUpdateProps): User
   deleteUser(id: String): User
-  loginUser(email: String,password: String): Login
+  loginUser(data: UserLoginProps): Login
 }
 `;
 exports.UserTypeDefs = (0, apollo_server_express_1.gql) `${exports.UserSchema}`;

@@ -16,6 +16,13 @@ export interface dbError{
 	code?: string,
 }
 
+export interface AuthResponse{
+	data :{id: string,
+	email: string} | undefined,
+	error: string | undefined
+
+}
+
 export function joiToError(joiError: any): IError {
 	let message = "There was an error processing your request. Please contact support.";
 	if (joiError && joiError.details && joiError.details[0]) {

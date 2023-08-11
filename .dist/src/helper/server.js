@@ -19,9 +19,11 @@ const schema_1 = __importDefault(require("../schema"));
 const resolvers_1 = __importDefault(require("../resolvers"));
 const body_parser_2 = require("body-parser");
 const userAuth_1 = require("../utils/auth/userAuth");
+const apollo_server_express_1 = require("apollo-server-express");
 const sofa_api_1 = require("sofa-api");
 const graphql_yoga_1 = require("graphql-yoga");
 const errorMessage_1 = __importDefault(require("../utils/enum/errorMessage"));
+const statusCodes_1 = __importDefault(require("../utils/enum/statusCodes"));
 dotenv_1.default.config();
 class Server {
     constructor(port) {
@@ -65,17 +67,15 @@ class Server {
                         return {
                             async willSendResponse(requestContext) {
                                 const { response, errors } = requestContext;
-                                //  response.http.status = 400;
-                                console.log(errors, "sdafs");
                                 if (errors) {
-                                    response.http.status = 400;
+                                    response.http.status = statusCodes_1.default.BAD_REQUEST;
                                     const resError = [];
                                     errors.forEach((error) => {
                                         resError.push({
                                             message: error.message,
                                             code: error.extensions
                                                 ? error.extensions.code
-                                                : "INTERNAL_SERVER_ERROR",
+                                                : errorMessage_1.default.INTERNAL_ERROR,
                                         });
                                     });
                                     response.body.singleResult.errors = resError;
@@ -87,7 +87,7 @@ class Server {
             ],
             formatError: (formattedError, error) => {
                 if (formattedError.message === `${errorMessage_1.default.GRAPH_QL_ERROR}\n`) {
-                    return { message: formattedError.message, statusCode: 404 };
+                    return { message: formattedError.message, statusCode: statusCodes_1.default.NOT_FOUND };
                 }
                 return formattedError;
             },
@@ -106,9 +106,12 @@ class Server {
                 resolvers: resolvers_1.default,
             }),
             async context({ req }) {
+                if (!req.body) {
+                    return new apollo_server_express_1.ApolloError(errorMessage_1.default.BODY_IS_NOT_PROVIDED, statusCodes_1.default.BAD_REQUEST.toString());
+                }
                 return {
                     args: req.body,
-                    token: null
+                    token: req?.headers?.authorization ? req?.headers?.authorization : null
                 };
             },
         }));

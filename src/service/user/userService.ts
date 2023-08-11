@@ -5,7 +5,7 @@ import ErrorMessageEnum from "../../utils/enum/errorMessage";
 import responseMessage from "../../utils/enum/responseMessage";
 import * as IRoleService from "../role/IRoleService";
 import * as IUserService from "./IUserService";
-import { IAppServiceProxy } from "../appServiceProxy";
+import { IAppServiceProxy, JwtResponse } from "../appServiceProxy";
 import { IResponse, dbError, toError } from "../../utils/interface/common";
 import { apiResponse } from "../../helper/apiResonse";
 import jwt from "jsonwebtoken";
@@ -29,12 +29,21 @@ export default class UserService implements IUserService.IUserServiceAPI {
   constructor(proxy: IAppServiceProxy) {
     this.proxy = proxy;
   }
-  private generateJWT = (user: IUSER): string => {
+  private generateJWT = (user: IUSER): JwtResponse => {
+    const jwtResponse:JwtResponse = {
+      token: null
+    }
+    try{
     const payLoad = {
-      id: user.id,
-      email: user.email,
+      id: user._id,
+      email: user.email
     };
-    return jwt.sign(payLoad, "process.env.JWT_SECRET");
+    jwtResponse.token = jwt.sign(payLoad, "process.env.JWT_SECRET");
+    return jwtResponse;
+  }catch(e){
+    jwtResponse.error = JSON.stringify(e)
+    return jwtResponse
+  }
   };
 
   public create = async (
@@ -159,7 +168,6 @@ export default class UserService implements IUserService.IUserServiceAPI {
         return apiResponse(null, result.error);
       }
       return apiResponse(result.user, null);
-
     } catch (e) {
       return apiResponse(null, e);
     }
@@ -230,8 +238,8 @@ export default class UserService implements IUserService.IUserServiceAPI {
         const errorMsg = ErrorMessageEnum.INVALID_CREDENTIALS;
         return apiResponse(null,  toError(errorMsg))
       }
-      const token: string = this.generateJWT(result.user);
-      return apiResponse({token , id: result.user.id}, null);
+      const JwtResponse: JwtResponse = this.generateJWT(result.user);
+      return apiResponse({token:  JwtResponse.token, id: result.user._id}, null);
     } catch (e) {
       return apiResponse(null, e);
     }
